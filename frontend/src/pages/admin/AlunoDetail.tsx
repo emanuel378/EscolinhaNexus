@@ -19,7 +19,9 @@ import {
   useRemoverRelatorio,
 } from "../../hooks/useRelatorios";
 import { StatusBadge } from "../../components/StatusBadge";
-import { StatusMensalidade } from "../../types";
+import { RelatorioNotasForm, RelatorioNotasResumo } from "../../components/RelatorioNotas";
+import { NotasRelatorio, StatusMensalidade } from "../../types";
+import { valoresIniciais } from "../../utils/relatorio";
 
 function formatarMoeda(valor: number) {
   return valor.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
@@ -332,14 +334,15 @@ function SecaoRelatorios({ alunoId }: { alunoId: string }) {
 
   const [mostrarForm, setMostrarForm] = useState(false);
   const [mesReferencia, setMesReferencia] = useState("");
-  const [notaTecnico, setNotaTecnico] = useState("5");
-  const [notaFisico, setNotaFisico] = useState("5");
-  const [notaTatico, setNotaTatico] = useState("5");
-  const [notaMental, setNotaMental] = useState("5");
+  const [notas, setNotas] = useState<NotasRelatorio>(valoresIniciais);
   const [pontosFortes, setPontosFortes] = useState("");
   const [pontosMelhorar, setPontosMelhorar] = useState("");
   const [objetivoProximoMes, setObjetivoProximoMes] = useState("");
   const [erro, setErro] = useState<string | null>(null);
+
+  function handleMudarNota(campo: keyof NotasRelatorio, valor: number) {
+    setNotas((atual) => ({ ...atual, [campo]: valor }));
+  }
 
   async function handleAdicionar(e: FormEvent) {
     e.preventDefault();
@@ -347,15 +350,13 @@ function SecaoRelatorios({ alunoId }: { alunoId: string }) {
     try {
       await criarRelatorio.mutateAsync({
         mesReferencia,
-        notaTecnico: Number(notaTecnico),
-        notaFisico: Number(notaFisico),
-        notaTatico: Number(notaTatico),
-        notaMental: Number(notaMental),
+        ...notas,
         pontosFortes,
         pontosMelhorar,
         objetivoProximoMes,
       });
       setMesReferencia("");
+      setNotas(valoresIniciais());
       setPontosFortes("");
       setPontosMelhorar("");
       setObjetivoProximoMes("");
@@ -391,56 +392,7 @@ function SecaoRelatorios({ alunoId }: { alunoId: string }) {
             onChange={(e) => setMesReferencia(e.target.value)}
             className="w-full rounded-lg border border-slate-300 px-2 py-1.5 text-xs"
           />
-          <div className="grid grid-cols-4 gap-2">
-            <label className="text-xs text-slate-500">
-              Técnico
-              <input
-                required
-                type="number"
-                min={0}
-                max={10}
-                value={notaTecnico}
-                onChange={(e) => setNotaTecnico(e.target.value)}
-                className="mt-1 w-full rounded-lg border border-slate-300 px-2 py-1.5 text-xs"
-              />
-            </label>
-            <label className="text-xs text-slate-500">
-              Físico
-              <input
-                required
-                type="number"
-                min={0}
-                max={10}
-                value={notaFisico}
-                onChange={(e) => setNotaFisico(e.target.value)}
-                className="mt-1 w-full rounded-lg border border-slate-300 px-2 py-1.5 text-xs"
-              />
-            </label>
-            <label className="text-xs text-slate-500">
-              Tático
-              <input
-                required
-                type="number"
-                min={0}
-                max={10}
-                value={notaTatico}
-                onChange={(e) => setNotaTatico(e.target.value)}
-                className="mt-1 w-full rounded-lg border border-slate-300 px-2 py-1.5 text-xs"
-              />
-            </label>
-            <label className="text-xs text-slate-500">
-              Mental
-              <input
-                required
-                type="number"
-                min={0}
-                max={10}
-                value={notaMental}
-                onChange={(e) => setNotaMental(e.target.value)}
-                className="mt-1 w-full rounded-lg border border-slate-300 px-2 py-1.5 text-xs"
-              />
-            </label>
-          </div>
+          <RelatorioNotasForm notas={notas} onChange={handleMudarNota} />
           <textarea
             required
             placeholder="Pontos fortes"
@@ -494,24 +446,7 @@ function SecaoRelatorios({ alunoId }: { alunoId: string }) {
                   Remover
                 </button>
               </div>
-              <div className="mb-2 grid grid-cols-4 gap-2 text-center">
-                <div>
-                  <p className="text-slate-500">Técnico</p>
-                  <p className="font-semibold text-slate-900">{r.notaTecnico}</p>
-                </div>
-                <div>
-                  <p className="text-slate-500">Físico</p>
-                  <p className="font-semibold text-slate-900">{r.notaFisico}</p>
-                </div>
-                <div>
-                  <p className="text-slate-500">Tático</p>
-                  <p className="font-semibold text-slate-900">{r.notaTatico}</p>
-                </div>
-                <div>
-                  <p className="text-slate-500">Mental</p>
-                  <p className="font-semibold text-slate-900">{r.notaMental}</p>
-                </div>
-              </div>
+              <RelatorioNotasResumo notas={r} />
               <p className="text-slate-600">
                 <span className="font-medium">Pontos fortes:</span> {r.pontosFortes}
               </p>

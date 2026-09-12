@@ -165,26 +165,42 @@ export interface LancarPontuacaoInput {
   data?: string;
 }
 
-export interface Relatorio {
+export interface NotasRelatorio {
+  tecControleBola: number;
+  tecLevantamento: number;
+  tecAtaque: number;
+  tecSaque: number;
+  tecRecepcao: number;
+  tecDefesa: number;
+  tecViradaBola: number;
+  fisResistencia: number;
+  fisVelocidade: number;
+  fisAgilidade: number;
+  fisCondicionamento: number;
+  fisIntensidade: number;
+  tatPosicionamento: number;
+  tatTomadaDecisao: number;
+  tatLeituraJogo: number;
+  tatEstrategia: number;
+  menComprometimento: number;
+  menConcentracao: number;
+  menDisciplina: number;
+  menConfianca: number;
+  menTrabalhoEquipe: number;
+}
+
+export interface Relatorio extends NotasRelatorio {
   id: string;
   alunoId: string;
   mesReferencia: string;
-  notaTecnico: number;
-  notaFisico: number;
-  notaTatico: number;
-  notaMental: number;
   pontosFortes: string;
   pontosMelhorar: string;
   objetivoProximoMes: string;
   criadoEm: string;
 }
 
-export interface CriarRelatorioInput {
+export interface CriarRelatorioInput extends NotasRelatorio {
   mesReferencia: string;
-  notaTecnico: number;
-  notaFisico: number;
-  notaTatico: number;
-  notaMental: number;
   pontosFortes: string;
   pontosMelhorar: string;
   objetivoProximoMes: string;

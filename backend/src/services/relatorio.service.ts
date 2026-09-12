@@ -3,10 +3,27 @@ import { AppError } from "../middlewares/errorHandler";
 
 interface RelatorioInput {
   mesReferencia: string;
-  notaTecnico: number;
-  notaFisico: number;
-  notaTatico: number;
-  notaMental: number;
+  tecControleBola: number;
+  tecLevantamento: number;
+  tecAtaque: number;
+  tecSaque: number;
+  tecRecepcao: number;
+  tecDefesa: number;
+  tecViradaBola: number;
+  fisResistencia: number;
+  fisVelocidade: number;
+  fisAgilidade: number;
+  fisCondicionamento: number;
+  fisIntensidade: number;
+  tatPosicionamento: number;
+  tatTomadaDecisao: number;
+  tatLeituraJogo: number;
+  tatEstrategia: number;
+  menComprometimento: number;
+  menConcentracao: number;
+  menDisciplina: number;
+  menConfianca: number;
+  menTrabalhoEquipe: number;
   pontosFortes: string;
   pontosMelhorar: string;
   objetivoProximoMes: string;
@@ -16,10 +33,27 @@ interface RelatorioRow {
   id: string;
   aluno_id: string;
   mes_referencia: string;
-  nota_tecnico: number;
-  nota_fisico: number;
-  nota_tatico: number;
-  nota_mental: number;
+  tec_controle_bola: number;
+  tec_levantamento: number;
+  tec_ataque: number;
+  tec_saque: number;
+  tec_recepcao: number;
+  tec_defesa: number;
+  tec_virada_bola: number;
+  fis_resistencia: number;
+  fis_velocidade: number;
+  fis_agilidade: number;
+  fis_condicionamento: number;
+  fis_intensidade: number;
+  tat_posicionamento: number;
+  tat_tomada_decisao: number;
+  tat_leitura_jogo: number;
+  tat_estrategia: number;
+  men_comprometimento: number;
+  men_concentracao: number;
+  men_disciplina: number;
+  men_confianca: number;
+  men_trabalho_equipe: number;
   pontos_fortes: string;
   pontos_melhorar: string;
   objetivo_proximo_mes: string;
@@ -31,14 +65,72 @@ function paraApi(row: RelatorioRow) {
     id: row.id,
     alunoId: row.aluno_id,
     mesReferencia: row.mes_referencia,
-    notaTecnico: row.nota_tecnico,
-    notaFisico: row.nota_fisico,
-    notaTatico: row.nota_tatico,
-    notaMental: row.nota_mental,
+    tecControleBola: row.tec_controle_bola,
+    tecLevantamento: row.tec_levantamento,
+    tecAtaque: row.tec_ataque,
+    tecSaque: row.tec_saque,
+    tecRecepcao: row.tec_recepcao,
+    tecDefesa: row.tec_defesa,
+    tecViradaBola: row.tec_virada_bola,
+    fisResistencia: row.fis_resistencia,
+    fisVelocidade: row.fis_velocidade,
+    fisAgilidade: row.fis_agilidade,
+    fisCondicionamento: row.fis_condicionamento,
+    fisIntensidade: row.fis_intensidade,
+    tatPosicionamento: row.tat_posicionamento,
+    tatTomadaDecisao: row.tat_tomada_decisao,
+    tatLeituraJogo: row.tat_leitura_jogo,
+    tatEstrategia: row.tat_estrategia,
+    menComprometimento: row.men_comprometimento,
+    menConcentracao: row.men_concentracao,
+    menDisciplina: row.men_disciplina,
+    menConfianca: row.men_confianca,
+    menTrabalhoEquipe: row.men_trabalho_equipe,
     pontosFortes: row.pontos_fortes,
     pontosMelhorar: row.pontos_melhorar,
     objetivoProximoMes: row.objetivo_proximo_mes,
     criadoEm: row.criado_em,
+  };
+}
+
+function paraColunas(input: Partial<RelatorioInput>) {
+  return {
+    ...(input.tecControleBola !== undefined ? { tec_controle_bola: input.tecControleBola } : {}),
+    ...(input.tecLevantamento !== undefined ? { tec_levantamento: input.tecLevantamento } : {}),
+    ...(input.tecAtaque !== undefined ? { tec_ataque: input.tecAtaque } : {}),
+    ...(input.tecSaque !== undefined ? { tec_saque: input.tecSaque } : {}),
+    ...(input.tecRecepcao !== undefined ? { tec_recepcao: input.tecRecepcao } : {}),
+    ...(input.tecDefesa !== undefined ? { tec_defesa: input.tecDefesa } : {}),
+    ...(input.tecViradaBola !== undefined ? { tec_virada_bola: input.tecViradaBola } : {}),
+    ...(input.fisResistencia !== undefined ? { fis_resistencia: input.fisResistencia } : {}),
+    ...(input.fisVelocidade !== undefined ? { fis_velocidade: input.fisVelocidade } : {}),
+    ...(input.fisAgilidade !== undefined ? { fis_agilidade: input.fisAgilidade } : {}),
+    ...(input.fisCondicionamento !== undefined
+      ? { fis_condicionamento: input.fisCondicionamento }
+      : {}),
+    ...(input.fisIntensidade !== undefined ? { fis_intensidade: input.fisIntensidade } : {}),
+    ...(input.tatPosicionamento !== undefined
+      ? { tat_posicionamento: input.tatPosicionamento }
+      : {}),
+    ...(input.tatTomadaDecisao !== undefined
+      ? { tat_tomada_decisao: input.tatTomadaDecisao }
+      : {}),
+    ...(input.tatLeituraJogo !== undefined ? { tat_leitura_jogo: input.tatLeituraJogo } : {}),
+    ...(input.tatEstrategia !== undefined ? { tat_estrategia: input.tatEstrategia } : {}),
+    ...(input.menComprometimento !== undefined
+      ? { men_comprometimento: input.menComprometimento }
+      : {}),
+    ...(input.menConcentracao !== undefined ? { men_concentracao: input.menConcentracao } : {}),
+    ...(input.menDisciplina !== undefined ? { men_disciplina: input.menDisciplina } : {}),
+    ...(input.menConfianca !== undefined ? { men_confianca: input.menConfianca } : {}),
+    ...(input.menTrabalhoEquipe !== undefined
+      ? { men_trabalho_equipe: input.menTrabalhoEquipe }
+      : {}),
+    ...(input.pontosFortes !== undefined ? { pontos_fortes: input.pontosFortes } : {}),
+    ...(input.pontosMelhorar !== undefined ? { pontos_melhorar: input.pontosMelhorar } : {}),
+    ...(input.objetivoProximoMes !== undefined
+      ? { objetivo_proximo_mes: input.objetivoProximoMes }
+      : {}),
   };
 }
 
@@ -71,13 +163,7 @@ export async function criarRelatorio(alunoId: string, input: RelatorioInput) {
     .insert({
       aluno_id: alunoId,
       mes_referencia: input.mesReferencia,
-      nota_tecnico: input.notaTecnico,
-      nota_fisico: input.notaFisico,
-      nota_tatico: input.notaTatico,
-      nota_mental: input.notaMental,
-      pontos_fortes: input.pontosFortes,
-      pontos_melhorar: input.pontosMelhorar,
-      objetivo_proximo_mes: input.objetivoProximoMes,
+      ...paraColunas(input),
     })
     .select("*")
     .single<RelatorioRow>();
@@ -98,17 +184,7 @@ export async function atualizarRelatorio(id: string, input: Partial<RelatorioInp
 
   const { data, error } = await supabaseAdmin
     .from("relatorios")
-    .update({
-      ...(input.notaTecnico !== undefined ? { nota_tecnico: input.notaTecnico } : {}),
-      ...(input.notaFisico !== undefined ? { nota_fisico: input.notaFisico } : {}),
-      ...(input.notaTatico !== undefined ? { nota_tatico: input.notaTatico } : {}),
-      ...(input.notaMental !== undefined ? { nota_mental: input.notaMental } : {}),
-      ...(input.pontosFortes !== undefined ? { pontos_fortes: input.pontosFortes } : {}),
-      ...(input.pontosMelhorar !== undefined ? { pontos_melhorar: input.pontosMelhorar } : {}),
-      ...(input.objetivoProximoMes !== undefined
-        ? { objetivo_proximo_mes: input.objetivoProximoMes }
-        : {}),
-    })
+    .update(paraColunas(input))
     .eq("id", id)
     .select("*")
     .single<RelatorioRow>();

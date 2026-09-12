@@ -1,4 +1,5 @@
 import { useMeusRelatorios } from "../../hooks/useRelatorios";
+import { RelatorioNotasResumo } from "../../components/RelatorioNotas";
 
 export function AlunoRelatoriosPage() {
   const { data: relatorios, isLoading } = useMeusRelatorios();
@@ -17,25 +18,8 @@ export function AlunoRelatoriosPage() {
           {relatorios.map((r) => (
             <div key={r.id} className="rounded-xl border border-slate-200 bg-white p-6 text-sm">
               <p className="mb-3 font-medium text-slate-900">{r.mesReferencia}</p>
-              <div className="mb-4 grid grid-cols-4 gap-2 text-center">
-                <div>
-                  <p className="text-slate-500">Técnico</p>
-                  <p className="text-lg font-semibold text-slate-900">{r.notaTecnico}</p>
-                </div>
-                <div>
-                  <p className="text-slate-500">Físico</p>
-                  <p className="text-lg font-semibold text-slate-900">{r.notaFisico}</p>
-                </div>
-                <div>
-                  <p className="text-slate-500">Tático</p>
-                  <p className="text-lg font-semibold text-slate-900">{r.notaTatico}</p>
-                </div>
-                <div>
-                  <p className="text-slate-500">Mental</p>
-                  <p className="text-lg font-semibold text-slate-900">{r.notaMental}</p>
-                </div>
-              </div>
-              <p className="mb-2 text-slate-600">
+              <RelatorioNotasResumo notas={r} />
+              <p className="mb-2 mt-2 text-slate-600">
                 <span className="font-medium text-slate-900">Pontos fortes:</span>{" "}
                 {r.pontosFortes}
               </p>

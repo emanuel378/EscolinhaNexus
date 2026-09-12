@@ -7,10 +7,31 @@ const notaSchema = z.number().int().min(0).max(10);
 
 const criarRelatorioSchema = z.object({
   mesReferencia: z.string().regex(/^\d{4}-\d{2}$/, "Use o formato YYYY-MM."),
-  notaTecnico: notaSchema,
-  notaFisico: notaSchema,
-  notaTatico: notaSchema,
-  notaMental: notaSchema,
+  // Técnico
+  tecControleBola: notaSchema,
+  tecLevantamento: notaSchema,
+  tecAtaque: notaSchema,
+  tecSaque: notaSchema,
+  tecRecepcao: notaSchema,
+  tecDefesa: notaSchema,
+  tecViradaBola: notaSchema,
+  // Físico
+  fisResistencia: notaSchema,
+  fisVelocidade: notaSchema,
+  fisAgilidade: notaSchema,
+  fisCondicionamento: notaSchema,
+  fisIntensidade: notaSchema,
+  // Tático
+  tatPosicionamento: notaSchema,
+  tatTomadaDecisao: notaSchema,
+  tatLeituraJogo: notaSchema,
+  tatEstrategia: notaSchema,
+  // Mental / Comportamental
+  menComprometimento: notaSchema,
+  menConcentracao: notaSchema,
+  menDisciplina: notaSchema,
+  menConfianca: notaSchema,
+  menTrabalhoEquipe: notaSchema,
   pontosFortes: z.string().min(3, "Descreva os pontos fortes."),
   pontosMelhorar: z.string().min(3, "Descreva os pontos a melhorar."),
   objetivoProximoMes: z.string().min(3, "Descreva o objetivo do próximo mês."),

@@ -9,7 +9,8 @@ Este repositório está na **Fase 4** do plano de implementação. Concluído at
 - **Fase 2:** Turmas, Treinos, Frequência (ficha de chamada + histórico/%) e
   Financeiro (mensalidades por aluno).
 - **Fase 3:** Pontuação (histórico com motivo), Ranking mensal calculado por
-  turma e Relatório individual mensal (técnico/físico/tático/mental).
+  turma e Relatório individual mensal (21 subitens em 4 categorias:
+  técnico/físico/tático/mental).
 - **Fase 4:** Dashboard completo do admin (alunos novos/saíram, pagamentos por
   status, frequência média do mês, ranking atual, próximos treinos), área do
   aluno reorganizada em menu (Início, Ranking, Evolução, Calendário,
@@ -132,9 +133,14 @@ cadastrar novos alunos.
 - Ranking mensal: calculado sob demanda (soma de pontuações no mês de
   referência), filtrável por turma no admin; o aluno vê o ranking da própria
   turma, com sua posição destacada.
-- Relatório individual mensal: notas de técnico/físico/tático/mental, pontos
+- Relatório individual mensal: nota (0-10) por subitem das 4 categorias —
+  Técnico (controle de bola, levantamento, ataque, saque, recepção, defesa,
+  virada de bola), Físico (resistência, velocidade, agilidade,
+  condicionamento, intensidade), Tático (posicionamento, tomada de decisão,
+  leitura de jogo, estratégia) e Mental/Comportamental (comprometimento,
+  concentração, disciplina, confiança, trabalho em equipe) — mais pontos
   fortes, pontos a melhorar e objetivo do próximo mês (admin lança, aluno
-  visualiza).
+  visualiza a média por categoria com opção de ver o detalhe por item).
 - Área do aluno (`/aluno/*`) protegida por role, com menu próprio: Início
   (resumo + próximo treino), Ranking (com comparação "faltam X pontos para
   o Yº"), Evolução (histórico de pontuação + histórico mensal dos últimos 6
@@ -160,7 +166,7 @@ backend/
       frequencia.service.ts   # ficha de chamada, histórico e % de presença
       mensalidade.service.ts
       pontuacao.service.ts    # lançamento de pontos e histórico por aluno
-      relatorio.service.ts    # relatório mensal (técnico/físico/tático/mental)
+      relatorio.service.ts    # relatório mensal (21 subitens em 4 categorias)
       ranking.service.ts      # ranking calculado sob demanda por mês/turma
       dashboard.service.ts    # resumo agregado para o painel do admin
       historico.service.ts    # histórico mensal (ranking/pontos/frequência/relatório) do aluno
@@ -178,7 +184,9 @@ frontend/
     pages/aluno/     # Home, Ranking, Evolucao, Calendario, Relatorios, Perfil (somente leitura)
     pages/auth/       # Login
     context/AuthContext.tsx   # usa supabase-js diretamente (login/logout/sessão)
-    components/            # Layout (navegação admin/aluno), ProtectedRoute, StatusBadge
+    components/            # Layout (navegação admin/aluno), ProtectedRoute, StatusBadge,
+                            # RelatorioNotas (form + resumo por categoria do relatório)
+    utils/relatorio.ts     # categorias/subitens do relatório e cálculo de média
     hooks/                  # useAlunos, useTurmas, useTreinos, useFrequencia,
                             # useMensalidades, usePontuacoes, useRelatorios, useRanking,
                             # useDashboard
