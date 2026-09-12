@@ -1,0 +1,172 @@
+# CT Escolinha de Vôlei
+
+Plataforma web para gestão de uma escolinha de vôlei — dois perfis de acesso:
+**Administrador/Professor** (controle total) e **Aluno/Atleta** (área individual
+somente leitura).
+
+Este repositório está na **Fase 2** do plano de implementação. Concluído até aqui:
+- **Fase 1:** monorepo + Supabase Auth (JWT/role) + CRUD de Alunos.
+- **Fase 2:** Turmas, Treinos, Frequência (ficha de chamada + histórico/%) e
+  Financeiro (mensalidades por aluno).
+
+## Stack
+
+- **Backend:** Node.js + Express + TypeScript + `@supabase/supabase-js`
+  (service role key) para acesso ao banco e operações de Auth.
+- **Banco/Auth:** Supabase (PostgreSQL gerenciado + Supabase Auth).
+- **Frontend:** React + TypeScript (Vite), React Router, TanStack Query,
+  `supabase-js` (chave anônima, só para login/sessão), Tailwind CSS.
+
+## Como a autenticação funciona
+
+- O **frontend fala diretamente com o Supabase Auth** (`supabase.auth.signInWithPassword`)
+  usando a chave anônima — não existe mais `/auth/login` no backend. O
+  `supabase-js` já guarda a sessão e renova o token automaticamente.
+- O **papel do usuário** (`admin` | `aluno`) fica em `app_metadata`, que só o
+  backend (com a `service_role` key) consegue escrever. O usuário não
+  consegue alterar isso pelo SDK client-side — diferente de `user_metadata`.
+- Toda chamada ao backend Express carrega o token do Supabase no header
+  `Authorization: Bearer`. O middleware `authenticate` valida esse token
+  contra o Supabase e o middleware `authorize(role)` bloqueia rotas
+  administrativas para quem não é admin — **no servidor**, não só escondendo
+  botões na tela.
+
+## Pré-requisitos
+
+- Node.js 18+ (testado com Node 22)
+- Uma conta e um projeto no [Supabase](https://supabase.com) (plano free serve)
+
+## Passo a passo — Supabase (uma vez só)
+
+1. Crie um projeto em supabase.com.
+2. Vá em **SQL Editor** → New query, cole o conteúdo de
+   `backend/supabase/schema.sql` e rode. Isso cria todas as tabelas, enums e
+   habilita RLS (só o `service_role`, usado pelo backend, acessa os dados).
+3. Vá em **Project Settings → API** e anote:
+   - `Project URL`
+   - `anon public` key
+   - `service_role` key (secreta — nunca vai para o frontend nem para o Git)
+
+## Passo a passo — Backend
+
+```bash
+cd backend
+npm install
+cp .env.example .env
+```
+
+Edite `backend/.env` com `SUPABASE_URL` e `SUPABASE_SERVICE_ROLE_KEY` do passo
+anterior.
+
+Crie o usuário administrador de exemplo:
+
+```bash
+npm run seed:admin
+```
+
+Isso cria:
+- **email:** `admin@ctescolinha.com`
+- **senha:** `admin123`
+
+> Troque essa senha antes de usar em produção.
+
+Suba o servidor:
+
+```bash
+npm run dev
+```
+
+O backend sobe em `http://localhost:3333`. Teste com:
+
+```bash
+curl http://localhost:3333/health
+```
+
+## Passo a passo — Frontend
+
+Em outro terminal:
+
+```bash
+cd frontend
+npm install
+cp .env.example .env
+```
+
+Edite `frontend/.env` com `VITE_SUPABASE_URL` e `VITE_SUPABASE_ANON_KEY`
+(a chave **anon public**, não a service_role).
+
+```bash
+npm run dev
+```
+
+O frontend sobe em `http://localhost:5173`. Acesse essa URL, faça login com o
+admin de exemplo e você cairá no painel administrativo, de onde pode
+cadastrar novos alunos.
+
+## O que já funciona (Fases 1 e 2)
+
+- Login (admin e aluno) via Supabase Auth, com sessão e refresh automáticos
+  no frontend.
+- Middleware `authenticate` (valida o token do Supabase) + `authorize(role)`
+  no backend — todas as rotas administrativas são bloqueadas no servidor
+  para quem não é admin.
+- CRUD completo de Alunos pelo admin: criar (cria também o usuário no
+  Supabase Auth com role `aluno` em `app_metadata`), listar (com filtro por
+  status), editar, ativar/desativar, remover, ver perfil individual.
+- CRUD de Turmas e Treinos (admin).
+- Frequência: ficha de chamada por treino (marcar presente/falta/falta
+  justificada em lote), histórico e percentual por aluno — visível para o
+  admin (no perfil do aluno) e para o próprio aluno (na sua home).
+- Financeiro: lançar mensalidades por aluno, marcar como paga/pendente/atrasada,
+  histórico por aluno, contador de pendentes no dashboard do admin.
+- Área do aluno (`/aluno`) protegida por role, mostrando perfil e frequência
+  (somente leitura) — pontuação, ranking e relatórios chegam na Fase 3.
+
+## Estrutura de pastas
+
+```
+backend/
+  supabase/schema.sql    # SQL completo do domínio — rodar no SQL Editor do Supabase
+  scripts/seed-admin.ts  # cria o usuário admin de exemplo
+  src/
+    routes/            # aluno, turma, treino, mensalidade routes.ts
+    controllers/        # validação (zod) + orquestração da resposta HTTP
+    services/            # regras de negócio + acesso ao Supabase
+      aluno.service.ts
+      turma.service.ts
+      treino.service.ts
+      frequencia.service.ts   # ficha de chamada, histórico e % de presença
+      mensalidade.service.ts
+    middlewares/
+      auth.middleware.ts              # authenticate (valida token Supabase) / authorize(role)
+      errorHandler.ts
+    lib/
+      supabase.ts                     # cliente com service_role key
+      env.ts
+    server.ts
+
+frontend/
+  src/
+    pages/admin/    # Dashboard, Alunos*, Turmas*, Treinos*, Chamada
+    pages/aluno/     # Home (perfil + frequência, somente leitura)
+    pages/auth/       # Login
+    context/AuthContext.tsx   # usa supabase-js diretamente (login/logout/sessão)
+    components/            # Layout (com navegação admin), ProtectedRoute, StatusBadge
+    hooks/                  # useAlunos, useTurmas, useTreinos, useFrequencia, useMensalidades
+    services/
+      supabaseClient.ts     # cliente com chave anônima (só Auth)
+      api.ts                # axios → backend Express, injeta o token da sessão
+      aluno.service.ts, turma.service.ts, treino.service.ts,
+      frequencia.service.ts, mensalidade.service.ts
+```
+
+## Próximas fases (não implementadas ainda)
+
+- **Fase 3:** Pontuação (histórico com motivo), Ranking mensal calculado,
+  Relatório individual mensal (técnico/físico/tático/mental).
+- **Fase 4:** Dashboard completo do admin, home gamificada do aluno, histórico mensal.
+- **Fase 5:** Polimento de responsividade, estados de loading/erro, validações finas.
+
+O `supabase/schema.sql` já modela as tabelas `pontuacoes` e `relatorios` para
+a Fase 3 não exigir migrations retroativas — mas as rotas/controllers dessas
+entidades ainda não existem.
