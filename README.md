@@ -4,10 +4,12 @@ Plataforma web para gestão de uma escolinha de vôlei — dois perfis de acesso
 **Administrador/Professor** (controle total) e **Aluno/Atleta** (área individual
 somente leitura).
 
-Este repositório está na **Fase 2** do plano de implementação. Concluído até aqui:
+Este repositório está na **Fase 3** do plano de implementação. Concluído até aqui:
 - **Fase 1:** monorepo + Supabase Auth (JWT/role) + CRUD de Alunos.
 - **Fase 2:** Turmas, Treinos, Frequência (ficha de chamada + histórico/%) e
   Financeiro (mensalidades por aluno).
+- **Fase 3:** Pontuação (histórico com motivo), Ranking mensal calculado por
+  turma e Relatório individual mensal (técnico/físico/tático/mental).
 
 ## Stack
 
@@ -103,7 +105,7 @@ O frontend sobe em `http://localhost:5173`. Acesse essa URL, faça login com o
 admin de exemplo e você cairá no painel administrativo, de onde pode
 cadastrar novos alunos.
 
-## O que já funciona (Fases 1 e 2)
+## O que já funciona (Fases 1 a 3)
 
 - Login (admin e aluno) via Supabase Auth, com sessão e refresh automáticos
   no frontend.
@@ -119,8 +121,16 @@ cadastrar novos alunos.
   admin (no perfil do aluno) e para o próprio aluno (na sua home).
 - Financeiro: lançar mensalidades por aluno, marcar como paga/pendente/atrasada,
   histórico por aluno, contador de pendentes no dashboard do admin.
-- Área do aluno (`/aluno`) protegida por role, mostrando perfil e frequência
-  (somente leitura) — pontuação, ranking e relatórios chegam na Fase 3.
+- Pontuação: lançamento de pontos por motivo (admin), histórico e total por
+  aluno — visível para o admin (no perfil do aluno) e para o próprio aluno.
+- Ranking mensal: calculado sob demanda (soma de pontuações no mês de
+  referência), filtrável por turma no admin; o aluno vê o ranking da própria
+  turma, com sua posição destacada.
+- Relatório individual mensal: notas de técnico/físico/tático/mental, pontos
+  fortes, pontos a melhorar e objetivo do próximo mês (admin lança, aluno
+  visualiza).
+- Área do aluno (`/aluno`) protegida por role, mostrando perfil, frequência,
+  pontuação, ranking da turma e relatórios mensais (tudo somente leitura).
 
 ## Estrutura de pastas
 
@@ -129,7 +139,7 @@ backend/
   supabase/schema.sql    # SQL completo do domínio — rodar no SQL Editor do Supabase
   scripts/seed-admin.ts  # cria o usuário admin de exemplo
   src/
-    routes/            # aluno, turma, treino, mensalidade routes.ts
+    routes/            # aluno, turma, treino, mensalidade, pontuacao, relatorio, ranking routes.ts
     controllers/        # validação (zod) + orquestração da resposta HTTP
     services/            # regras de negócio + acesso ao Supabase
       aluno.service.ts
@@ -137,6 +147,9 @@ backend/
       treino.service.ts
       frequencia.service.ts   # ficha de chamada, histórico e % de presença
       mensalidade.service.ts
+      pontuacao.service.ts    # lançamento de pontos e histórico por aluno
+      relatorio.service.ts    # relatório mensal (técnico/físico/tático/mental)
+      ranking.service.ts      # ranking calculado sob demanda por mês/turma
     middlewares/
       auth.middleware.ts              # authenticate (valida token Supabase) / authorize(role)
       errorHandler.ts
@@ -147,23 +160,23 @@ backend/
 
 frontend/
   src/
-    pages/admin/    # Dashboard, Alunos*, Turmas*, Treinos*, Chamada
-    pages/aluno/     # Home (perfil + frequência, somente leitura)
+    pages/admin/    # Dashboard, Alunos*, Turmas*, Treinos*, Chamada, Ranking
+    pages/aluno/     # Home (perfil, frequência, pontuação, ranking, relatórios — somente leitura)
     pages/auth/       # Login
     context/AuthContext.tsx   # usa supabase-js diretamente (login/logout/sessão)
     components/            # Layout (com navegação admin), ProtectedRoute, StatusBadge
-    hooks/                  # useAlunos, useTurmas, useTreinos, useFrequencia, useMensalidades
+    hooks/                  # useAlunos, useTurmas, useTreinos, useFrequencia,
+                            # useMensalidades, usePontuacoes, useRelatorios, useRanking
     services/
       supabaseClient.ts     # cliente com chave anônima (só Auth)
       api.ts                # axios → backend Express, injeta o token da sessão
       aluno.service.ts, turma.service.ts, treino.service.ts,
-      frequencia.service.ts, mensalidade.service.ts
+      frequencia.service.ts, mensalidade.service.ts,
+      pontuacao.service.ts, relatorio.service.ts, ranking.service.ts
 ```
 
 ## Próximas fases (não implementadas ainda)
 
-- **Fase 3:** Pontuação (histórico com motivo), Ranking mensal calculado,
-  Relatório individual mensal (técnico/físico/tático/mental).
 - **Fase 4:** Dashboard completo do admin, home gamificada do aluno, histórico mensal.
 - **Fase 5:** Polimento de responsividade, estados de loading/erro, validações finas.
 

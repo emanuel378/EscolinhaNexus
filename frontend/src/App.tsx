@@ -11,6 +11,7 @@ import { TurmaFormPage } from "./pages/admin/TurmaForm";
 import { TreinosListPage } from "./pages/admin/TreinosList";
 import { TreinoFormPage } from "./pages/admin/TreinoForm";
 import { ChamadaPage } from "./pages/admin/Chamada";
+import { RankingPage } from "./pages/admin/Ranking";
 import { AlunoHomePage } from "./pages/aluno/Home";
 
 export default function App() {
@@ -34,6 +35,8 @@ export default function App() {
           <Route path="/admin/treinos/novo" element={<TreinoFormPage />} />
           <Route path="/admin/treinos/:id/editar" element={<TreinoFormPage />} />
           <Route path="/admin/treinos/:id/chamada" element={<ChamadaPage />} />
+
+          <Route path="/admin/ranking" element={<RankingPage />} />
         </Route>
       </Route>
 

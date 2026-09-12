@@ -8,6 +8,16 @@ import {
   useMensalidadesDoAluno,
   useRemoverMensalidade,
 } from "../../hooks/useMensalidades";
+import {
+  useLancarPontuacao,
+  usePontuacoesDoAluno,
+  useRemoverPontuacao,
+} from "../../hooks/usePontuacoes";
+import {
+  useCriarRelatorio,
+  useRelatoriosDoAluno,
+  useRemoverRelatorio,
+} from "../../hooks/useRelatorios";
 import { StatusBadge } from "../../components/StatusBadge";
 import { StatusMensalidade } from "../../types";
 
@@ -209,6 +219,316 @@ function SecaoMensalidades({ alunoId }: { alunoId: string }) {
   );
 }
 
+function SecaoPontuacao({ alunoId }: { alunoId: string }) {
+  const { data, isLoading } = usePontuacoesDoAluno(alunoId);
+  const lancarPontuacao = useLancarPontuacao(alunoId);
+  const removerPontuacao = useRemoverPontuacao(alunoId);
+
+  const [mostrarForm, setMostrarForm] = useState(false);
+  const [pontos, setPontos] = useState("");
+  const [motivo, setMotivo] = useState("");
+  const [erro, setErro] = useState<string | null>(null);
+
+  async function handleAdicionar(e: FormEvent) {
+    e.preventDefault();
+    setErro(null);
+    try {
+      await lancarPontuacao.mutateAsync({ pontos: Number(pontos), motivo });
+      setPontos("");
+      setMotivo("");
+      setMostrarForm(false);
+    } catch {
+      setErro("Não foi possível lançar a pontuação.");
+    }
+  }
+
+  async function handleRemover(id: string) {
+    if (!confirm("Remover este lançamento de pontuação?")) return;
+    await removerPontuacao.mutateAsync(id);
+  }
+
+  return (
+    <div className="rounded-xl border border-slate-200 bg-white p-6">
+      <div className="mb-3 flex items-center justify-between">
+        <h2 className="text-sm font-semibold text-slate-900">Pontuação</h2>
+        <button
+          onClick={() => setMostrarForm((v) => !v)}
+          className="rounded-lg border border-slate-300 px-3 py-1 text-xs hover:bg-slate-100"
+        >
+          {mostrarForm ? "Cancelar" : "+ Lançar pontos"}
+        </button>
+      </div>
+
+      {data && <p className="mb-4 text-3xl font-semibold text-slate-900">{data.total} pts</p>}
+
+      {mostrarForm && (
+        <form onSubmit={handleAdicionar} className="mb-4 space-y-2 rounded-lg bg-slate-50 p-3">
+          <div className="grid grid-cols-3 gap-2">
+            <input
+              required
+              type="number"
+              placeholder="Pontos (ex: 10 ou -5)"
+              value={pontos}
+              onChange={(e) => setPontos(e.target.value)}
+              className="rounded-lg border border-slate-300 px-2 py-1.5 text-xs"
+            />
+            <input
+              required
+              placeholder="Motivo"
+              value={motivo}
+              onChange={(e) => setMotivo(e.target.value)}
+              className="col-span-2 rounded-lg border border-slate-300 px-2 py-1.5 text-xs"
+            />
+          </div>
+          {erro && <p className="text-xs text-status-vermelho">{erro}</p>}
+          <button
+            type="submit"
+            disabled={lancarPontuacao.isPending}
+            className="w-full rounded-lg bg-slate-900 py-1.5 text-xs font-medium text-white hover:bg-slate-800 disabled:opacity-60"
+          >
+            {lancarPontuacao.isPending ? "Salvando..." : "Lançar"}
+          </button>
+        </form>
+      )}
+
+      {isLoading && <p className="text-sm text-slate-500">Carregando...</p>}
+      {data && data.historico.length === 0 && (
+        <p className="text-sm text-slate-500">Nenhuma pontuação lançada.</p>
+      )}
+
+      {data && data.historico.length > 0 && (
+        <div className="max-h-48 space-y-1 overflow-y-auto text-xs">
+          {data.historico.map((p) => (
+            <div
+              key={p.id}
+              className="flex items-center justify-between border-t border-slate-100 py-1.5"
+            >
+              <span className="text-slate-600">
+                {new Date(p.data).toLocaleDateString("pt-BR")} · {p.motivo}
+              </span>
+              <div className="flex items-center gap-2">
+                <span className={p.pontos >= 0 ? "text-status-verde" : "text-status-vermelho"}>
+                  {p.pontos >= 0 ? `+${p.pontos}` : p.pontos}
+                </span>
+                <button
+                  onClick={() => handleRemover(p.id)}
+                  className="text-status-vermelho hover:underline"
+                >
+                  Remover
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function SecaoRelatorios({ alunoId }: { alunoId: string }) {
+  const { data: relatorios, isLoading } = useRelatoriosDoAluno(alunoId);
+  const criarRelatorio = useCriarRelatorio(alunoId);
+  const removerRelatorio = useRemoverRelatorio(alunoId);
+
+  const [mostrarForm, setMostrarForm] = useState(false);
+  const [mesReferencia, setMesReferencia] = useState("");
+  const [notaTecnico, setNotaTecnico] = useState("5");
+  const [notaFisico, setNotaFisico] = useState("5");
+  const [notaTatico, setNotaTatico] = useState("5");
+  const [notaMental, setNotaMental] = useState("5");
+  const [pontosFortes, setPontosFortes] = useState("");
+  const [pontosMelhorar, setPontosMelhorar] = useState("");
+  const [objetivoProximoMes, setObjetivoProximoMes] = useState("");
+  const [erro, setErro] = useState<string | null>(null);
+
+  async function handleAdicionar(e: FormEvent) {
+    e.preventDefault();
+    setErro(null);
+    try {
+      await criarRelatorio.mutateAsync({
+        mesReferencia,
+        notaTecnico: Number(notaTecnico),
+        notaFisico: Number(notaFisico),
+        notaTatico: Number(notaTatico),
+        notaMental: Number(notaMental),
+        pontosFortes,
+        pontosMelhorar,
+        objetivoProximoMes,
+      });
+      setMesReferencia("");
+      setPontosFortes("");
+      setPontosMelhorar("");
+      setObjetivoProximoMes("");
+      setMostrarForm(false);
+    } catch {
+      setErro("Não foi possível criar o relatório (verifique se o mês já não foi lançado).");
+    }
+  }
+
+  async function handleRemover(id: string) {
+    if (!confirm("Remover este relatório?")) return;
+    await removerRelatorio.mutateAsync(id);
+  }
+
+  return (
+    <div className="rounded-xl border border-slate-200 bg-white p-6">
+      <div className="mb-3 flex items-center justify-between">
+        <h2 className="text-sm font-semibold text-slate-900">Relatórios mensais</h2>
+        <button
+          onClick={() => setMostrarForm((v) => !v)}
+          className="rounded-lg border border-slate-300 px-3 py-1 text-xs hover:bg-slate-100"
+        >
+          {mostrarForm ? "Cancelar" : "+ Novo relatório"}
+        </button>
+      </div>
+
+      {mostrarForm && (
+        <form onSubmit={handleAdicionar} className="mb-4 space-y-2 rounded-lg bg-slate-50 p-3">
+          <input
+            required
+            placeholder="Mês (YYYY-MM)"
+            value={mesReferencia}
+            onChange={(e) => setMesReferencia(e.target.value)}
+            className="w-full rounded-lg border border-slate-300 px-2 py-1.5 text-xs"
+          />
+          <div className="grid grid-cols-4 gap-2">
+            <label className="text-xs text-slate-500">
+              Técnico
+              <input
+                required
+                type="number"
+                min={0}
+                max={10}
+                value={notaTecnico}
+                onChange={(e) => setNotaTecnico(e.target.value)}
+                className="mt-1 w-full rounded-lg border border-slate-300 px-2 py-1.5 text-xs"
+              />
+            </label>
+            <label className="text-xs text-slate-500">
+              Físico
+              <input
+                required
+                type="number"
+                min={0}
+                max={10}
+                value={notaFisico}
+                onChange={(e) => setNotaFisico(e.target.value)}
+                className="mt-1 w-full rounded-lg border border-slate-300 px-2 py-1.5 text-xs"
+              />
+            </label>
+            <label className="text-xs text-slate-500">
+              Tático
+              <input
+                required
+                type="number"
+                min={0}
+                max={10}
+                value={notaTatico}
+                onChange={(e) => setNotaTatico(e.target.value)}
+                className="mt-1 w-full rounded-lg border border-slate-300 px-2 py-1.5 text-xs"
+              />
+            </label>
+            <label className="text-xs text-slate-500">
+              Mental
+              <input
+                required
+                type="number"
+                min={0}
+                max={10}
+                value={notaMental}
+                onChange={(e) => setNotaMental(e.target.value)}
+                className="mt-1 w-full rounded-lg border border-slate-300 px-2 py-1.5 text-xs"
+              />
+            </label>
+          </div>
+          <textarea
+            required
+            placeholder="Pontos fortes"
+            value={pontosFortes}
+            onChange={(e) => setPontosFortes(e.target.value)}
+            className="w-full rounded-lg border border-slate-300 px-2 py-1.5 text-xs"
+            rows={2}
+          />
+          <textarea
+            required
+            placeholder="Pontos a melhorar"
+            value={pontosMelhorar}
+            onChange={(e) => setPontosMelhorar(e.target.value)}
+            className="w-full rounded-lg border border-slate-300 px-2 py-1.5 text-xs"
+            rows={2}
+          />
+          <textarea
+            required
+            placeholder="Objetivo para o próximo mês"
+            value={objetivoProximoMes}
+            onChange={(e) => setObjetivoProximoMes(e.target.value)}
+            className="w-full rounded-lg border border-slate-300 px-2 py-1.5 text-xs"
+            rows={2}
+          />
+          {erro && <p className="text-xs text-status-vermelho">{erro}</p>}
+          <button
+            type="submit"
+            disabled={criarRelatorio.isPending}
+            className="w-full rounded-lg bg-slate-900 py-1.5 text-xs font-medium text-white hover:bg-slate-800 disabled:opacity-60"
+          >
+            {criarRelatorio.isPending ? "Salvando..." : "Criar relatório"}
+          </button>
+        </form>
+      )}
+
+      {isLoading && <p className="text-sm text-slate-500">Carregando...</p>}
+      {relatorios && relatorios.length === 0 && (
+        <p className="text-sm text-slate-500">Nenhum relatório lançado.</p>
+      )}
+
+      {relatorios && relatorios.length > 0 && (
+        <div className="space-y-3">
+          {relatorios.map((r) => (
+            <div key={r.id} className="rounded-lg border border-slate-100 p-3 text-xs">
+              <div className="mb-2 flex items-center justify-between">
+                <p className="font-medium text-slate-900">{r.mesReferencia}</p>
+                <button
+                  onClick={() => handleRemover(r.id)}
+                  className="text-status-vermelho hover:underline"
+                >
+                  Remover
+                </button>
+              </div>
+              <div className="mb-2 grid grid-cols-4 gap-2 text-center">
+                <div>
+                  <p className="text-slate-500">Técnico</p>
+                  <p className="font-semibold text-slate-900">{r.notaTecnico}</p>
+                </div>
+                <div>
+                  <p className="text-slate-500">Físico</p>
+                  <p className="font-semibold text-slate-900">{r.notaFisico}</p>
+                </div>
+                <div>
+                  <p className="text-slate-500">Tático</p>
+                  <p className="font-semibold text-slate-900">{r.notaTatico}</p>
+                </div>
+                <div>
+                  <p className="text-slate-500">Mental</p>
+                  <p className="font-semibold text-slate-900">{r.notaMental}</p>
+                </div>
+              </div>
+              <p className="text-slate-600">
+                <span className="font-medium">Pontos fortes:</span> {r.pontosFortes}
+              </p>
+              <p className="text-slate-600">
+                <span className="font-medium">A melhorar:</span> {r.pontosMelhorar}
+              </p>
+              <p className="text-slate-600">
+                <span className="font-medium">Objetivo:</span> {r.objetivoProximoMes}
+              </p>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 export function AlunoDetailPage() {
   const { id } = useParams<{ id: string }>();
   const { data: aluno, isLoading, isError } = useAluno(id ?? "");
@@ -260,6 +580,8 @@ export function AlunoDetailPage() {
       </div>
 
       <SecaoFrequencia alunoId={aluno.id} />
+      <SecaoPontuacao alunoId={aluno.id} />
+      <SecaoRelatorios alunoId={aluno.id} />
       <SecaoMensalidades alunoId={aluno.id} />
 
       <Link to="/admin/alunos" className="inline-block text-sm text-slate-500 hover:underline">

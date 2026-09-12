@@ -6,6 +6,7 @@ const NAV_ADMIN = [
   { to: "/admin/alunos", label: "Alunos" },
   { to: "/admin/turmas", label: "Turmas" },
   { to: "/admin/treinos", label: "Treinos" },
+  { to: "/admin/ranking", label: "Ranking" },
 ];
 
 export function Layout() {

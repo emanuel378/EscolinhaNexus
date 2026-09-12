@@ -143,3 +143,62 @@ export interface AtualizarMensalidadeInput {
   dataPagamento?: string | null;
   status?: StatusMensalidade;
 }
+
+export interface Pontuacao {
+  id: string;
+  alunoId: string;
+  pontos: number;
+  motivo: string;
+  data: string;
+}
+
+export interface HistoricoPontuacao {
+  total: number;
+  historico: Pontuacao[];
+}
+
+export interface LancarPontuacaoInput {
+  pontos: number;
+  motivo: string;
+  data?: string;
+}
+
+export interface Relatorio {
+  id: string;
+  alunoId: string;
+  mesReferencia: string;
+  notaTecnico: number;
+  notaFisico: number;
+  notaTatico: number;
+  notaMental: number;
+  pontosFortes: string;
+  pontosMelhorar: string;
+  objetivoProximoMes: string;
+  criadoEm: string;
+}
+
+export interface CriarRelatorioInput {
+  mesReferencia: string;
+  notaTecnico: number;
+  notaFisico: number;
+  notaTatico: number;
+  notaMental: number;
+  pontosFortes: string;
+  pontosMelhorar: string;
+  objetivoProximoMes: string;
+}
+
+export type AtualizarRelatorioInput = Partial<Omit<CriarRelatorioInput, "mesReferencia">>;
+
+export interface RankingItem {
+  alunoId: string;
+  nome: string;
+  turma: string | null;
+  pontos: number;
+  posicao: number;
+}
+
+export interface Ranking {
+  mesReferencia: string;
+  ranking: RankingItem[];
+}
