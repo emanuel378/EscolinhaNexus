@@ -129,11 +129,16 @@ cadastrar novos alunos.
 - CRUD de Turmas e Treinos (admin).
 - Frequência: ficha de chamada por treino (marcar presente/falta/falta
   justificada em lote), histórico e percentual por aluno — visível para o
-  admin (no perfil do aluno) e para o próprio aluno (na sua home).
+  admin (no perfil do aluno) e para o próprio aluno (na sua home). Toda
+  presença gera **+5 pontos automáticos** (motivo "Presença no treino"),
+  vinculados àquela frequência específica; se o status for trocado depois
+  (deixar de ser presente), o ponto automático é removido — sem duplicar ao
+  salvar a mesma chamada de novo.
 - Financeiro: lançar mensalidades por aluno, marcar como paga/pendente/atrasada,
   histórico por aluno, contador de pendentes no dashboard do admin.
-- Pontuação: lançamento de pontos por motivo (admin), histórico e total por
-  aluno — visível para o admin (no perfil do aluno) e para o próprio aluno.
+- Pontuação: lançamento manual de pontos por motivo (admin) + os pontos
+  automáticos de presença acima, histórico e total por aluno — visível para
+  o admin (no perfil do aluno) e para o próprio aluno.
 - Ranking mensal: calculado sob demanda (soma de pontuações no mês de
   referência), filtrável por turma no admin; o aluno vê o ranking da própria
   turma, com sua posição destacada.

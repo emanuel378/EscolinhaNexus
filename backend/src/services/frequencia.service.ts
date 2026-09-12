@@ -58,23 +58,77 @@ export async function listarFichaDeChamada(treinoId: string) {
     .sort((a, b) => a.nome.localeCompare(b.nome, "pt-BR"));
 }
 
+const PONTOS_POR_PRESENCA = 5;
+
+interface FrequenciaAtualizadaRow {
+  id: string;
+  aluno_id: string;
+  status: StatusFrequencia;
+}
+
+// Mantém a pontuação em sincronia com a presença: toda vez que um registro
+// vira "presente" ganha +5 pontos automáticos (vinculados a essa frequência
+// específica via frequencia_id); se deixar de ser "presente", o ponto
+// automático correspondente é removido. Usa upsert com ignoreDuplicates
+// para não duplicar pontos ao salvar a mesma chamada de novo.
+async function sincronizarPontosDePresenca(frequencias: FrequenciaAtualizadaRow[]) {
+  const presentes = frequencias.filter((f) => f.status === "presente");
+  const naoPresentes = frequencias.filter((f) => f.status !== "presente");
+
+  if (naoPresentes.length > 0) {
+    const { error } = await supabaseAdmin
+      .from("pontuacoes")
+      .delete()
+      .in(
+        "frequencia_id",
+        naoPresentes.map((f) => f.id)
+      );
+
+    if (error) {
+      throw new AppError(`Erro ao ajustar pontos de presença: ${error.message}`, 500);
+    }
+  }
+
+  if (presentes.length > 0) {
+    const { error } = await supabaseAdmin.from("pontuacoes").upsert(
+      presentes.map((f) => ({
+        aluno_id: f.aluno_id,
+        frequencia_id: f.id,
+        pontos: PONTOS_POR_PRESENCA,
+        motivo: "Presença no treino",
+      })),
+      { onConflict: "frequencia_id", ignoreDuplicates: true }
+    );
+
+    if (error) {
+      throw new AppError(`Erro ao lançar pontos de presença: ${error.message}`, 500);
+    }
+  }
+}
+
 export async function marcarFrequencias(treinoId: string, registros: RegistroInput[]) {
   await buscarTreinoPorId(treinoId);
 
   if (registros.length === 0) return;
 
-  const { error } = await supabaseAdmin.from("frequencias").upsert(
-    registros.map((r) => ({
-      treino_id: treinoId,
-      aluno_id: r.alunoId,
-      status: r.status,
-    })),
-    { onConflict: "aluno_id,treino_id" }
-  );
+  const { data: frequencias, error } = await supabaseAdmin
+    .from("frequencias")
+    .upsert(
+      registros.map((r) => ({
+        treino_id: treinoId,
+        aluno_id: r.alunoId,
+        status: r.status,
+      })),
+      { onConflict: "aluno_id,treino_id" }
+    )
+    .select("id, aluno_id, status")
+    .returns<FrequenciaAtualizadaRow[]>();
 
   if (error) {
     throw new AppError(`Erro ao marcar frequências: ${error.message}`, 500);
   }
+
+  await sincronizarPontosDePresenca(frequencias);
 }
 
 interface HistoricoRow {

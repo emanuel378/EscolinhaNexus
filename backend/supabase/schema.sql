@@ -96,6 +96,23 @@ create table if not exists pontuacoes (
   data timestamptz not null default now()
 );
 
+-- Vincula um lançamento de pontuação à frequência que o gerou (presença =
+-- +5 pontos automáticos). Nulo para lançamentos manuais do admin. O índice
+-- único garante no máximo um lançamento automático por frequência (evita
+-- duplicar pontos ao salvar a mesma chamada mais de uma vez).
+alter table pontuacoes add column if not exists frequencia_id uuid references frequencias (id) on delete cascade;
+create unique index if not exists pontuacoes_frequencia_id_key on pontuacoes (frequencia_id);
+
+-- Migração retroativa: alunos que já tinham presença marcada antes desta
+-- automação existir também ganham os pontos, para o ranking não ficar
+-- inconsistente entre presenças antigas e novas.
+insert into pontuacoes (aluno_id, frequencia_id, pontos, motivo)
+select f.aluno_id, f.id, 5, 'Presença no treino'
+from frequencias f
+where f.status = 'presente'
+  and not exists (select 1 from pontuacoes p where p.frequencia_id = f.id)
+on conflict (frequencia_id) do nothing;
+
 -- Relatório mensal: uma nota (0-10) por subitem de cada uma das 4 categorias
 -- sugeridas no briefing, em vez de uma nota macro única por categoria.
 create table if not exists relatorios (
