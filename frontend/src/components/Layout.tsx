@@ -7,6 +7,7 @@ const NAV_ADMIN = [
   { to: "/admin/turmas", label: "Turmas" },
   { to: "/admin/treinos", label: "Treinos" },
   { to: "/admin/ranking", label: "Ranking" },
+  { to: "/admin/relatorios", label: "Relatórios" },
 ];
 
 const NAV_ALUNO = [

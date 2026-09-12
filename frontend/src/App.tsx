@@ -12,6 +12,7 @@ import { TreinosListPage } from "./pages/admin/TreinosList";
 import { TreinoFormPage } from "./pages/admin/TreinoForm";
 import { ChamadaPage } from "./pages/admin/Chamada";
 import { RankingPage } from "./pages/admin/Ranking";
+import { RelatoriosStatusPage } from "./pages/admin/RelatoriosStatus";
 import { AlunoHomePage } from "./pages/aluno/Home";
 import { AlunoRankingPage } from "./pages/aluno/Ranking";
 import { AlunoEvolucaoPage } from "./pages/aluno/Evolucao";
@@ -42,6 +43,7 @@ export default function App() {
           <Route path="/admin/treinos/:id/chamada" element={<ChamadaPage />} />
 
           <Route path="/admin/ranking" element={<RankingPage />} />
+          <Route path="/admin/relatorios" element={<RelatoriosStatusPage />} />
         </Route>
       </Route>
 

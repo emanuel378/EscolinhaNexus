@@ -146,6 +146,50 @@ export async function listarRelatoriosDoAluno(alunoId: string) {
   return data.map(paraApi);
 }
 
+interface AlunoAtivoRow {
+  id: string;
+  usuarios: { nome: string } | null;
+  turmas: { nome: string } | null;
+}
+
+// Status do relatório de cada aluno ativo num mês: usado no dashboard (X de
+// Y lançados) e na tela do admin que lista quem ainda falta ter relatório.
+export async function listarStatusRelatoriosDoMes(mesReferencia: string) {
+  const { data: alunos, error: alunosError } = await supabaseAdmin
+    .from("alunos")
+    .select("id, usuarios ( nome ), turmas ( nome )")
+    .eq("status", "ativo")
+    .returns<AlunoAtivoRow[]>();
+
+  if (alunosError) throw new AppError(`Erro ao listar alunos: ${alunosError.message}`, 500);
+
+  const alunoIds = alunos.map((a) => a.id);
+  let relatorios: { id: string; aluno_id: string }[] = [];
+
+  if (alunoIds.length > 0) {
+    const { data, error } = await supabaseAdmin
+      .from("relatorios")
+      .select("id, aluno_id")
+      .eq("mes_referencia", mesReferencia)
+      .in("aluno_id", alunoIds)
+      .returns<{ id: string; aluno_id: string }[]>();
+
+    if (error) throw new AppError(`Erro ao listar relatórios do mês: ${error.message}`, 500);
+    relatorios = data;
+  }
+
+  const relatorioPorAluno = new Map(relatorios.map((r) => [r.aluno_id, r.id]));
+
+  return alunos
+    .map((a) => ({
+      alunoId: a.id,
+      nome: a.usuarios?.nome ?? "—",
+      turma: a.turmas?.nome ?? null,
+      relatorioId: relatorioPorAluno.get(a.id) ?? null,
+    }))
+    .sort((a, b) => a.nome.localeCompare(b.nome, "pt-BR"));
+}
+
 export async function criarRelatorio(alunoId: string, input: RelatorioInput) {
   const { data: existente } = await supabaseAdmin
     .from("relatorios")

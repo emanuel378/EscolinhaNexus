@@ -2,6 +2,7 @@ import { Request, Response, NextFunction } from "express";
 import { z } from "zod";
 import * as relatorioService from "../services/relatorio.service";
 import { buscarAlunoPorUsuarioId } from "../services/aluno.service";
+import { mesAtual } from "../services/ranking.service";
 
 const notaSchema = z.number().int().min(0).max(10);
 
@@ -38,6 +39,28 @@ const criarRelatorioSchema = z.object({
 });
 
 const atualizarRelatorioSchema = criarRelatorioSchema.omit({ mesReferencia: true }).partial();
+
+const statusMesQuerySchema = z.object({
+  mesReferencia: z
+    .string()
+    .regex(/^\d{4}-\d{2}$/, "Use o formato YYYY-MM.")
+    .optional(),
+});
+
+export async function listarStatusRelatoriosController(
+  req: Request,
+  res: Response,
+  next: NextFunction
+) {
+  try {
+    const { mesReferencia } = statusMesQuerySchema.parse(req.query);
+    const mes = mesReferencia ?? mesAtual();
+    const alunos = await relatorioService.listarStatusRelatoriosDoMes(mes);
+    return res.status(200).json({ mesReferencia: mes, alunos });
+  } catch (err) {
+    return next(err);
+  }
+}
 
 export async function listarRelatoriosController(req: Request, res: Response, next: NextFunction) {
   try {

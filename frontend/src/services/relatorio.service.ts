@@ -1,5 +1,10 @@
 import { api } from "./api";
-import { AtualizarRelatorioInput, CriarRelatorioInput, Relatorio } from "../types";
+import {
+  AtualizarRelatorioInput,
+  CriarRelatorioInput,
+  Relatorio,
+  StatusRelatoriosMes,
+} from "../types";
 
 export async function listarRelatoriosDoAluno(alunoId: string): Promise<Relatorio[]> {
   const { data } = await api.get<Relatorio[]>(`/alunos/${alunoId}/relatorios`);
@@ -28,5 +33,10 @@ export async function removerRelatorio(id: string): Promise<void> {
 
 export async function buscarMeusRelatorios(): Promise<Relatorio[]> {
   const { data } = await api.get<Relatorio[]>("/alunos/me/relatorios");
+  return data;
+}
+
+export async function buscarStatusRelatoriosDoMes(mesReferencia?: string): Promise<StatusRelatoriosMes> {
+  const { data } = await api.get<StatusRelatoriosMes>("/relatorios", { params: { mesReferencia } });
   return data;
 }

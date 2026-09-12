@@ -145,6 +145,8 @@ cadastrar novos alunos.
   concentração, disciplina, confiança, trabalho em equipe) — mais pontos
   fortes, pontos a melhorar e objetivo do próximo mês (admin lança, aluno
   visualiza a média por categoria com opção de ver o detalhe por item).
+  Tela `/admin/relatorios` lista todos os alunos ativos com status do mês
+  (✅ lançado / ⏳ pendente) e link direto pro perfil de cada um.
 - Área do aluno (`/aluno/*`) protegida por role, com menu próprio: Início
   (resumo + próximo treino), Ranking (com comparação "faltam X pontos para
   o Yº"), Evolução (histórico de pontuação + histórico mensal dos últimos 6
@@ -152,7 +154,8 @@ cadastrar novos alunos.
   tudo somente leitura.
 - Dashboard do admin (`/admin`): alunos ativos/novos/que saíram no mês,
   pagamentos por status (pago/pendente/atrasado), frequência média do mês,
-  top 5 do ranking atual e próximos treinos agendados.
+  relatórios lançados no mês (X de Y alunos), top 5 do ranking atual e
+  próximos treinos agendados.
 
 ## Estrutura de pastas
 

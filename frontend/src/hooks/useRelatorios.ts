@@ -45,3 +45,10 @@ export function useMeusRelatorios() {
     queryFn: relatorioService.buscarMeusRelatorios,
   });
 }
+
+export function useStatusRelatoriosDoMes(mesReferencia?: string) {
+  return useQuery({
+    queryKey: ["relatorios", "status", mesReferencia ?? "atual"],
+    queryFn: () => relatorioService.buscarStatusRelatoriosDoMes(mesReferencia),
+  });
+}

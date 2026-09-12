@@ -75,6 +75,19 @@ export function AdminDashboardPage() {
         </div>
       </div>
 
+      <Link
+        to="/admin/relatorios"
+        className="mt-4 flex items-center justify-between rounded-xl border border-slate-200 bg-white p-5 hover:bg-slate-50"
+      >
+        <div>
+          <p className="text-sm text-slate-500">📋 Relatórios do mês</p>
+          <p className="mt-1 text-2xl font-semibold text-slate-900">
+            {data.relatoriosLancados} de {data.relatoriosTotal}
+          </p>
+        </div>
+        <span className="text-xs text-slate-500">Ver detalhes →</span>
+      </Link>
+
       <div className="mt-4 grid grid-cols-1 gap-4 lg:grid-cols-2">
         <div className="rounded-xl border border-slate-200 bg-white p-5">
           <div className="mb-3 flex items-center justify-between">

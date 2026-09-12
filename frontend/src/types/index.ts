@@ -208,6 +208,18 @@ export interface CriarRelatorioInput extends NotasRelatorio {
 
 export type AtualizarRelatorioInput = Partial<Omit<CriarRelatorioInput, "mesReferencia">>;
 
+export interface StatusRelatorioItem {
+  alunoId: string;
+  nome: string;
+  turma: string | null;
+  relatorioId: string | null;
+}
+
+export interface StatusRelatoriosMes {
+  mesReferencia: string;
+  alunos: StatusRelatorioItem[];
+}
+
 export interface RankingItem {
   alunoId: string;
   nome: string;
@@ -239,6 +251,8 @@ export interface DashboardResumo {
   alunosSairamEsteMes: number;
   pagamentos: { pago: number; pendente: number; atrasado: number };
   frequenciaMediaMes: number;
+  relatoriosLancados: number;
+  relatoriosTotal: number;
   rankingTop: RankingItem[];
   proximosTreinos: ProximoTreinoResumo[];
 }

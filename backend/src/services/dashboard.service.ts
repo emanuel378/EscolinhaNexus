@@ -2,6 +2,7 @@ import { supabaseAdmin } from "../lib/supabase";
 import { AppError } from "../middlewares/errorHandler";
 import { calcularRanking, intervaloDoMes, mesAtual } from "./ranking.service";
 import { marcarAtrasadas } from "./mensalidade.service";
+import { listarStatusRelatoriosDoMes } from "./relatorio.service";
 
 type StatusMensalidade = "pago" | "pendente" | "atrasado";
 type StatusFrequencia = "presente" | "falta" | "falta_justificada";
@@ -99,6 +100,8 @@ export async function buscarResumoDashboard() {
     totalFrequencias === 0 ? 0 : Math.round((presencasDoMes / totalFrequencias) * 1000) / 10;
 
   const { ranking } = await calcularRanking({ mesReferencia });
+  const statusRelatorios = await listarStatusRelatoriosDoMes(mesReferencia);
+  const relatoriosLancados = statusRelatorios.filter((a) => a.relatorioId !== null).length;
 
   return {
     mesReferencia,
@@ -108,6 +111,8 @@ export async function buscarResumoDashboard() {
     alunosSairamEsteMes: alunosSairamResult.count ?? 0,
     pagamentos,
     frequenciaMediaMes,
+    relatoriosLancados,
+    relatoriosTotal: statusRelatorios.length,
     rankingTop: ranking.slice(0, 5),
     proximosTreinos: (proximosTreinosResult.data ?? []).map((t) => ({
       id: t.id,
