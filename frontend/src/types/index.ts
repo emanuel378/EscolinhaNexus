@@ -41,6 +41,7 @@ export interface CriarAlunoInput {
   senha: string;
   dataNascimento: string;
   telefone?: string;
+  dataEntrada?: string;
   turmaId?: string;
   fotoUrl?: string;
 }
@@ -50,6 +51,7 @@ export interface AtualizarAlunoInput {
   email?: string;
   dataNascimento?: string;
   telefone?: string;
+  dataEntrada?: string;
   turmaId?: string | null;
   fotoUrl?: string;
   status?: StatusAluno;

@@ -1,6 +1,7 @@
 import { supabaseAdmin } from "../lib/supabase";
 import { AppError } from "../middlewares/errorHandler";
 import { calcularRanking, intervaloDoMes, mesAtual } from "./ranking.service";
+import { marcarAtrasadas } from "./mensalidade.service";
 
 type StatusMensalidade = "pago" | "pendente" | "atrasado";
 type StatusFrequencia = "presente" | "falta" | "falta_justificada";
@@ -24,6 +25,8 @@ interface FrequenciaComTreinoRow {
 // Dashboard. Calculado sob demanda (sem cache) — o volume de dados de uma
 // escolinha é pequeno o suficiente para isso não ser um problema.
 export async function buscarResumoDashboard() {
+  await marcarAtrasadas();
+
   const mesReferencia = mesAtual();
   const { inicio, fim } = intervaloDoMes(mesReferencia);
   const inicioData = inicio.substring(0, 10);

@@ -21,6 +21,7 @@ const atualizarAlunoSchema = z.object({
   email: z.string().email().optional(),
   dataNascimento: z.coerce.date().optional(),
   telefone: z.string().optional(),
+  dataEntrada: z.coerce.date().optional(),
   turmaId: z.string().uuid().nullable().optional(),
   fotoUrl: z.string().url().optional(),
   status: z.enum(["ativo", "inativo"]).optional(),

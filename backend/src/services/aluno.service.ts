@@ -19,6 +19,7 @@ interface AtualizarAlunoInput {
   email?: string;
   dataNascimento?: Date;
   telefone?: string;
+  dataEntrada?: Date;
   turmaId?: string | null;
   fotoUrl?: string;
   status?: StatusAluno;
@@ -225,6 +226,7 @@ export async function atualizarAluno(id: string, input: AtualizarAlunoInput) {
     .update({
       ...(input.dataNascimento ? { data_nascimento: input.dataNascimento } : {}),
       ...(input.telefone !== undefined ? { telefone: input.telefone } : {}),
+      ...(input.dataEntrada ? { data_entrada: input.dataEntrada } : {}),
       ...(input.turmaId !== undefined ? { turma_id: input.turmaId } : {}),
       ...(input.fotoUrl !== undefined ? { foto_url: input.fotoUrl } : {}),
       ...(input.status ? { status: input.status } : {}),
