@@ -132,3 +132,77 @@ export async function listarHistoricoFrequencia(alunoId: string) {
     historico,
   };
 }
+
+interface TreinoDoMesRow {
+  id: string;
+  data: string;
+  hora_inicio: string;
+  hora_fim: string;
+  tipo: string;
+  local: string;
+}
+
+interface FrequenciaPorTreinoRow {
+  treino_id: string;
+  status: StatusFrequencia;
+}
+
+// Calendário mensal do aluno: todo treino da turma dele no mês, com o
+// status de presença já marcado (ou null, se o treino ainda não teve
+// chamada feita ou é futuro).
+export async function listarCalendarioMensal(
+  alunoId: string,
+  turmaId: string | null,
+  mesReferencia: string
+) {
+  if (!turmaId) return { mesReferencia, dias: [] };
+
+  const [ano, mes] = mesReferencia.split("-").map(Number);
+  if (!ano || !mes || mes < 1 || mes > 12) {
+    throw new AppError("mesReferencia inválido. Use o formato YYYY-MM.", 400);
+  }
+  const inicio = new Date(Date.UTC(ano, mes - 1, 1)).toISOString().substring(0, 10);
+  const fim = new Date(Date.UTC(ano, mes, 1)).toISOString().substring(0, 10);
+
+  const { data: treinos, error: treinosError } = await supabaseAdmin
+    .from("treinos")
+    .select("id, data, hora_inicio, hora_fim, tipo, local")
+    .eq("turma_id", turmaId)
+    .gte("data", inicio)
+    .lt("data", fim)
+    .order("data", { ascending: true })
+    .returns<TreinoDoMesRow[]>();
+
+  if (treinosError) {
+    throw new AppError(`Erro ao listar treinos do mês: ${treinosError.message}`, 500);
+  }
+
+  const treinoIds = treinos.map((t) => t.id);
+  let frequencias: FrequenciaPorTreinoRow[] = [];
+
+  if (treinoIds.length > 0) {
+    const { data, error } = await supabaseAdmin
+      .from("frequencias")
+      .select("treino_id, status")
+      .eq("aluno_id", alunoId)
+      .in("treino_id", treinoIds)
+      .returns<FrequenciaPorTreinoRow[]>();
+
+    if (error) throw new AppError(`Erro ao listar frequências do mês: ${error.message}`, 500);
+    frequencias = data;
+  }
+
+  const statusPorTreino = new Map(frequencias.map((f) => [f.treino_id, f.status]));
+
+  const dias = treinos.map((t) => ({
+    treinoId: t.id,
+    data: t.data,
+    horaInicio: t.hora_inicio,
+    horaFim: t.hora_fim,
+    tipo: t.tipo,
+    local: t.local,
+    status: statusPorTreino.get(t.id) ?? null,
+  }));
+
+  return { mesReferencia, dias };
+}

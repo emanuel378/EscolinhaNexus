@@ -7,6 +7,8 @@ import {
   alterarStatusAlunoController,
   removerAlunoController,
   meuPerfilAlunoController,
+  meuProximoTreinoController,
+  meuCalendarioController,
 } from "../controllers/aluno.controller";
 import {
   historicoFrequenciaAlunoController,
@@ -39,6 +41,8 @@ router.get("/me/frequencias", authorize("aluno"), minhaFrequenciaController);
 router.get("/me/pontuacoes", authorize("aluno"), minhasPontuacoesController);
 router.get("/me/relatorios", authorize("aluno"), meusRelatoriosController);
 router.get("/me/ranking", authorize("aluno"), meuRankingController);
+router.get("/me/proximo-treino", authorize("aluno"), meuProximoTreinoController);
+router.get("/me/calendario", authorize("aluno"), meuCalendarioController);
 
 // Todas as rotas abaixo são exclusivas do admin.
 router.get("/", authorize("admin"), listarAlunosController);

@@ -202,3 +202,40 @@ export interface Ranking {
   mesReferencia: string;
   ranking: RankingItem[];
 }
+
+export interface ProximoTreinoResumo {
+  id: string;
+  data: string;
+  horaInicio: string;
+  horaFim: string;
+  local: string;
+  tipo: string;
+  turma: string | null;
+}
+
+export interface DashboardResumo {
+  mesReferencia: string;
+  alunosAtivos: number;
+  alunosInativos: number;
+  alunosNovos: number;
+  alunosSairamEsteMes: number;
+  pagamentos: { pago: number; pendente: number; atrasado: number };
+  frequenciaMediaMes: number;
+  rankingTop: RankingItem[];
+  proximosTreinos: ProximoTreinoResumo[];
+}
+
+export interface CalendarioDia {
+  treinoId: string;
+  data: string;
+  horaInicio: string;
+  horaFim: string;
+  tipo: string;
+  local: string;
+  status: StatusFrequencia | null;
+}
+
+export interface CalendarioMensal {
+  mesReferencia: string;
+  dias: CalendarioDia[];
+}

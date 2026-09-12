@@ -108,6 +108,25 @@ export async function atualizarTreino(id: string, input: Partial<TreinoInput>) {
   return buscarTreinoPorId(id);
 }
 
+// Próximo treino agendado (data >= hoje) da turma do aluno, usado na área
+// do aluno ("Próximo treino: Terça — 20h").
+export async function buscarProximoTreino(turmaId: string) {
+  const hoje = new Date().toISOString().substring(0, 10);
+
+  const { data, error } = await supabaseAdmin
+    .from("treinos")
+    .select(SELECT_TREINO)
+    .eq("turma_id", turmaId)
+    .gte("data", hoje)
+    .order("data", { ascending: true })
+    .order("hora_inicio", { ascending: true })
+    .limit(1)
+    .maybeSingle<TreinoRow>();
+
+  if (error) throw new AppError(`Erro ao buscar próximo treino: ${error.message}`, 500);
+  return data ? paraApi(data) : null;
+}
+
 export async function removerTreino(id: string) {
   await buscarTreinoPorId(id);
 

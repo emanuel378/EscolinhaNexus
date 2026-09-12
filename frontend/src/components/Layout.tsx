@@ -9,6 +9,15 @@ const NAV_ADMIN = [
   { to: "/admin/ranking", label: "Ranking" },
 ];
 
+const NAV_ALUNO = [
+  { to: "/aluno", label: "🏠 Início", end: true },
+  { to: "/aluno/ranking", label: "🏆 Ranking" },
+  { to: "/aluno/evolucao", label: "📊 Evolução" },
+  { to: "/aluno/calendario", label: "📅 Calendário" },
+  { to: "/aluno/relatorios", label: "📋 Relatórios" },
+  { to: "/aluno/perfil", label: "👤 Perfil" },
+];
+
 export function Layout() {
   const { usuario, logout } = useAuth();
   const navigate = useNavigate();
@@ -35,9 +44,9 @@ export function Layout() {
             </button>
           </div>
         </div>
-        {usuario?.role === "admin" && (
+        {usuario && (
           <nav className="mx-auto flex max-w-5xl gap-1 overflow-x-auto px-4 pb-2">
-            {NAV_ADMIN.map((item) => (
+            {(usuario.role === "admin" ? NAV_ADMIN : NAV_ALUNO).map((item) => (
               <NavLink
                 key={item.to}
                 to={item.to}

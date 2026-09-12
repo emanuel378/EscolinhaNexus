@@ -17,7 +17,7 @@ export function mesAtual() {
   return `${agora.getFullYear()}-${String(agora.getMonth() + 1).padStart(2, "0")}`;
 }
 
-function intervaloDoMes(mesReferencia: string) {
+export function intervaloDoMes(mesReferencia: string) {
   const [ano, mes] = mesReferencia.split("-").map(Number);
   if (!ano || !mes || mes < 1 || mes > 12) {
     throw new AppError("mesReferencia inválido. Use o formato YYYY-MM.", 400);

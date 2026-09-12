@@ -44,6 +44,21 @@ export function useAlterarStatusAluno() {
   });
 }
 
+export function useMeuProximoTreino() {
+  return useQuery({
+    queryKey: ["treinos", "proximo", "meu"],
+    queryFn: alunoService.meuProximoTreino,
+  });
+}
+
+export function useMeuCalendario(mes: string) {
+  return useQuery({
+    queryKey: ["calendario", "meu", mes],
+    queryFn: () => alunoService.meuCalendario(mes),
+    enabled: !!mes,
+  });
+}
+
 export function useRemoverAluno() {
   const queryClient = useQueryClient();
   return useMutation({

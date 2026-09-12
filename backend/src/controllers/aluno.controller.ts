@@ -1,6 +1,8 @@
 import { Request, Response, NextFunction } from "express";
 import { z } from "zod";
 import * as alunoService from "../services/aluno.service";
+import * as treinoService from "../services/treino.service";
+import * as frequenciaService from "../services/frequencia.service";
 
 const criarAlunoSchema = z.object({
   nome: z.string().min(2, "Nome é obrigatório."),
@@ -31,6 +33,10 @@ const listarQuerySchema = z.object({
   status: z.enum(["ativo", "inativo"]).optional(),
 });
 
+const calendarioQuerySchema = z.object({
+  mes: z.string().regex(/^\d{4}-\d{2}$/, "Use o formato YYYY-MM."),
+});
+
 export async function listarAlunosController(req: Request, res: Response, next: NextFunction) {
   try {
     const { status } = listarQuerySchema.parse(req.query);
@@ -45,6 +51,28 @@ export async function meuPerfilAlunoController(req: Request, res: Response, next
   try {
     const aluno = await alunoService.buscarAlunoPorUsuarioId(req.auth!.sub);
     return res.status(200).json(aluno);
+  } catch (err) {
+    return next(err);
+  }
+}
+
+export async function meuProximoTreinoController(req: Request, res: Response, next: NextFunction) {
+  try {
+    const aluno = await alunoService.buscarAlunoPorUsuarioId(req.auth!.sub);
+    if (!aluno.turmaId) return res.status(200).json(null);
+    const treino = await treinoService.buscarProximoTreino(aluno.turmaId);
+    return res.status(200).json(treino);
+  } catch (err) {
+    return next(err);
+  }
+}
+
+export async function meuCalendarioController(req: Request, res: Response, next: NextFunction) {
+  try {
+    const { mes } = calendarioQuerySchema.parse(req.query);
+    const aluno = await alunoService.buscarAlunoPorUsuarioId(req.auth!.sub);
+    const calendario = await frequenciaService.listarCalendarioMensal(aluno.id, aluno.turmaId, mes);
+    return res.status(200).json(calendario);
   } catch (err) {
     return next(err);
   }

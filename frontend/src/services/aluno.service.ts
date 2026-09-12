@@ -1,5 +1,12 @@
 import { api } from "./api";
-import { Aluno, AtualizarAlunoInput, CriarAlunoInput, StatusAluno } from "../types";
+import {
+  Aluno,
+  AtualizarAlunoInput,
+  CalendarioMensal,
+  CriarAlunoInput,
+  StatusAluno,
+  Treino,
+} from "../types";
 
 export async function listarAlunos(status?: StatusAluno): Promise<Aluno[]> {
   const { data } = await api.get<Aluno[]>("/alunos", { params: { status } });
@@ -33,4 +40,14 @@ export async function alterarStatusAluno(id: string, status: StatusAluno): Promi
 
 export async function removerAluno(id: string): Promise<void> {
   await api.delete(`/alunos/${id}`);
+}
+
+export async function meuProximoTreino(): Promise<Treino | null> {
+  const { data } = await api.get<Treino | null>("/alunos/me/proximo-treino");
+  return data;
+}
+
+export async function meuCalendario(mes: string): Promise<CalendarioMensal> {
+  const { data } = await api.get<CalendarioMensal>("/alunos/me/calendario", { params: { mes } });
+  return data;
 }
