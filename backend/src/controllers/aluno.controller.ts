@@ -3,6 +3,7 @@ import { z } from "zod";
 import * as alunoService from "../services/aluno.service";
 import * as treinoService from "../services/treino.service";
 import * as frequenciaService from "../services/frequencia.service";
+import * as historicoService from "../services/historico.service";
 
 const criarAlunoSchema = z.object({
   nome: z.string().min(2, "Nome é obrigatório."),
@@ -73,6 +74,16 @@ export async function meuCalendarioController(req: Request, res: Response, next:
     const aluno = await alunoService.buscarAlunoPorUsuarioId(req.auth!.sub);
     const calendario = await frequenciaService.listarCalendarioMensal(aluno.id, aluno.turmaId, mes);
     return res.status(200).json(calendario);
+  } catch (err) {
+    return next(err);
+  }
+}
+
+export async function meuHistoricoMensalController(req: Request, res: Response, next: NextFunction) {
+  try {
+    const aluno = await alunoService.buscarAlunoPorUsuarioId(req.auth!.sub);
+    const historico = await historicoService.buscarHistoricoMensal(aluno.id, aluno.turmaId);
+    return res.status(200).json(historico);
   } catch (err) {
     return next(err);
   }

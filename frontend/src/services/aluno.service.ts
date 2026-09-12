@@ -4,6 +4,7 @@ import {
   AtualizarAlunoInput,
   CalendarioMensal,
   CriarAlunoInput,
+  HistoricoMensalItem,
   StatusAluno,
   Treino,
 } from "../types";
@@ -49,5 +50,10 @@ export async function meuProximoTreino(): Promise<Treino | null> {
 
 export async function meuCalendario(mes: string): Promise<CalendarioMensal> {
   const { data } = await api.get<CalendarioMensal>("/alunos/me/calendario", { params: { mes } });
+  return data;
+}
+
+export async function meuHistoricoMensal(): Promise<HistoricoMensalItem[]> {
+  const { data } = await api.get<HistoricoMensalItem[]>("/alunos/me/historico-mensal");
   return data;
 }

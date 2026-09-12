@@ -59,6 +59,13 @@ export function useMeuCalendario(mes: string) {
   });
 }
 
+export function useMeuHistoricoMensal() {
+  return useQuery({
+    queryKey: ["historico-mensal", "meu"],
+    queryFn: alunoService.meuHistoricoMensal,
+  });
+}
+
 export function useRemoverAluno() {
   const queryClient = useQueryClient();
   return useMutation({

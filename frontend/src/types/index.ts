@@ -239,3 +239,11 @@ export interface CalendarioMensal {
   mesReferencia: string;
   dias: CalendarioDia[];
 }
+
+export interface HistoricoMensalItem {
+  mesReferencia: string;
+  posicao: number | null;
+  pontos: number;
+  frequenciaPercentual: number | null;
+  relatorioDisponivel: boolean;
+}
