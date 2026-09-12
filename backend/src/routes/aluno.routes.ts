@@ -1,4 +1,5 @@
 import { Router } from "express";
+import multer from "multer";
 import {
   listarAlunosController,
   buscarAlunoController,
@@ -10,6 +11,8 @@ import {
   meuProximoTreinoController,
   meuCalendarioController,
   meuHistoricoMensalController,
+  uploadFotoAlunoController,
+  removerFotoAlunoController,
 } from "../controllers/aluno.controller";
 import {
   historicoFrequenciaAlunoController,
@@ -34,6 +37,11 @@ import { authenticate, authorize } from "../middlewares/auth.middleware";
 
 const router = Router();
 
+const uploadFoto = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 5 * 1024 * 1024 },
+});
+
 router.use(authenticate);
 
 // Rotas do próprio aluno: somente leitura dos seus dados.
@@ -53,6 +61,14 @@ router.post("/", authorize("admin"), criarAlunoController);
 router.put("/:id", authorize("admin"), atualizarAlunoController);
 router.patch("/:id/status", authorize("admin"), alterarStatusAlunoController);
 router.delete("/:id", authorize("admin"), removerAlunoController);
+
+router.post(
+  "/:id/foto",
+  authorize("admin"),
+  uploadFoto.single("foto"),
+  uploadFotoAlunoController
+);
+router.delete("/:id/foto", authorize("admin"), removerFotoAlunoController);
 
 router.get("/:id/frequencias", authorize("admin"), historicoFrequenciaAlunoController);
 

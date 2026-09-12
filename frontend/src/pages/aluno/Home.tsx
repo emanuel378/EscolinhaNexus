@@ -7,6 +7,7 @@ import { useMeuRanking } from "../../hooks/useRanking";
 import { useMeuProximoTreino, useMeuHistoricoMensal } from "../../hooks/useAlunos";
 import { useMeusRelatorios } from "../../hooks/useRelatorios";
 import { RelatorioNotasResumo } from "../../components/RelatorioNotas";
+import { iniciais } from "../../utils/nome";
 
 function formatarDiaHora(data: string, horaInicio: string) {
   const dataFormatada = new Date(data + "T00:00:00").toLocaleDateString("pt-BR", {
@@ -14,13 +15,6 @@ function formatarDiaHora(data: string, horaInicio: string) {
   });
   const dia = dataFormatada.charAt(0).toUpperCase() + dataFormatada.slice(1);
   return `${dia} — ${horaInicio}`;
-}
-
-function iniciais(nome: string) {
-  const partes = nome.trim().split(/\s+/);
-  const primeira = partes[0]?.[0] ?? "";
-  const ultima = partes.length > 1 ? partes[partes.length - 1][0] : "";
-  return (primeira + ultima).toUpperCase();
 }
 
 export function AlunoHomePage() {

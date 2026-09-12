@@ -57,3 +57,15 @@ export async function meuHistoricoMensal(): Promise<HistoricoMensalItem[]> {
   const { data } = await api.get<HistoricoMensalItem[]>("/alunos/me/historico-mensal");
   return data;
 }
+
+export async function uploadFotoAluno(id: string, arquivo: File): Promise<Aluno> {
+  const formData = new FormData();
+  formData.append("foto", arquivo);
+  const { data } = await api.post<Aluno>(`/alunos/${id}/foto`, formData);
+  return data;
+}
+
+export async function removerFotoAluno(id: string): Promise<Aluno> {
+  const { data } = await api.delete<Aluno>(`/alunos/${id}/foto`);
+  return data;
+}

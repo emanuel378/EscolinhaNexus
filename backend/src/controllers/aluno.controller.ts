@@ -137,3 +137,27 @@ export async function removerAlunoController(req: Request, res: Response, next: 
     return next(err);
   }
 }
+
+export async function uploadFotoAlunoController(req: Request, res: Response, next: NextFunction) {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ message: "Nenhum arquivo de imagem enviado." });
+    }
+    const aluno = await alunoService.uploadFotoAluno(req.params.id, {
+      buffer: req.file.buffer,
+      mimetype: req.file.mimetype,
+    });
+    return res.status(200).json(aluno);
+  } catch (err) {
+    return next(err);
+  }
+}
+
+export async function removerFotoAlunoController(req: Request, res: Response, next: NextFunction) {
+  try {
+    const aluno = await alunoService.removerFotoAluno(req.params.id);
+    return res.status(200).json(aluno);
+  } catch (err) {
+    return next(err);
+  }
+}

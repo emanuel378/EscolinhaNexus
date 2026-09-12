@@ -49,8 +49,10 @@ Este repositório está na **Fase 4** do plano de implementação. Concluído at
 
 1. Crie um projeto em supabase.com.
 2. Vá em **SQL Editor** → New query, cole o conteúdo de
-   `backend/supabase/schema.sql` e rode. Isso cria todas as tabelas, enums e
-   habilita RLS (só o `service_role`, usado pelo backend, acessa os dados).
+   `backend/supabase/schema.sql` e rode. Isso cria todas as tabelas, enums,
+   habilita RLS (só o `service_role`, usado pelo backend, acessa os dados) e
+   cria o bucket de Storage `fotos-alunos` (público) usado nas fotos de
+   perfil.
 3. Vá em **Project Settings → API** e anote:
    - `Project URL`
    - `anon public` key
@@ -121,7 +123,9 @@ cadastrar novos alunos.
   para quem não é admin.
 - CRUD completo de Alunos pelo admin: criar (cria também o usuário no
   Supabase Auth com role `aluno` em `app_metadata`), listar (com filtro por
-  status), editar, ativar/desativar, remover, ver perfil individual.
+  status), editar, ativar/desativar, remover, ver perfil individual. Foto de
+  perfil: upload/troca/remoção (JPEG/PNG/WEBP até 5MB) via Supabase Storage
+  (bucket `fotos-alunos`), exibida na listagem, no perfil e na home do aluno.
 - CRUD de Turmas e Treinos (admin).
 - Frequência: ficha de chamada por treino (marcar presente/falta/falta
   justificada em lote), histórico e percentual por aluno — visível para o
@@ -185,8 +189,10 @@ frontend/
     pages/auth/       # Login
     context/AuthContext.tsx   # usa supabase-js diretamente (login/logout/sessão)
     components/            # Layout (navegação admin/aluno), ProtectedRoute, StatusBadge,
-                            # RelatorioNotas (form + resumo por categoria do relatório)
+                            # RelatorioNotas (form + resumo por categoria do relatório),
+                            # FotoAlunoUpload (upload/troca/remoção de foto de perfil)
     utils/relatorio.ts     # categorias/subitens do relatório e cálculo de média
+    utils/nome.ts           # iniciais do nome, usado no avatar quando não há foto
     hooks/                  # useAlunos, useTurmas, useTreinos, useFrequencia,
                             # useMensalidades, usePontuacoes, useRelatorios, useRanking,
                             # useDashboard
@@ -202,7 +208,7 @@ frontend/
 ## Próximas fases (não implementadas ainda)
 
 - **Fase 5:** Polimento de responsividade, estados de loading/erro, validações
-  finas, upload de foto de perfil, gráficos de evolução, notificações.
+  finas, gráficos de evolução, notificações.
 
 O `supabase/schema.sql` já modela as tabelas `pontuacoes` e `relatorios` para
 a Fase 3 não exigir migrations retroativas — mas as rotas/controllers dessas

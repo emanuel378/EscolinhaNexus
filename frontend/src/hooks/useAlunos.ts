@@ -66,6 +66,22 @@ export function useMeuHistoricoMensal() {
   });
 }
 
+export function useUploadFotoAluno(id: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (arquivo: File) => alunoService.uploadFotoAluno(id, arquivo),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ALUNOS_KEY }),
+  });
+}
+
+export function useRemoverFotoAluno(id: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: () => alunoService.removerFotoAluno(id),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ALUNOS_KEY }),
+  });
+}
+
 export function useRemoverAluno() {
   const queryClient = useQueryClient();
   return useMutation({

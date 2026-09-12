@@ -20,6 +20,7 @@ import {
 } from "../../hooks/useRelatorios";
 import { StatusBadge } from "../../components/StatusBadge";
 import { RelatorioNotasForm, RelatorioNotasResumo } from "../../components/RelatorioNotas";
+import { FotoAlunoUpload } from "../../components/FotoAlunoUpload";
 import { NotasRelatorio, StatusMensalidade } from "../../types";
 import { valoresIniciais } from "../../utils/relatorio";
 
@@ -481,6 +482,10 @@ export function AlunoDetailPage() {
         >
           Editar
         </Link>
+      </div>
+
+      <div className="rounded-xl border border-slate-200 bg-white p-6">
+        <FotoAlunoUpload alunoId={aluno.id} nome={aluno.usuario.nome} fotoUrl={aluno.fotoUrl} />
       </div>
 
       <div className="space-y-4 rounded-xl border border-slate-200 bg-white p-6 text-sm">

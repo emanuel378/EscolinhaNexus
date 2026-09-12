@@ -191,3 +191,11 @@ alter table frequencias enable row level security;
 alter table mensalidades enable row level security;
 alter table pontuacoes enable row level security;
 alter table relatorios enable row level security;
+
+-- Bucket de Storage para as fotos de perfil dos alunos. Público (a imagem é
+-- servida direto por URL, sem token de acesso) — só o backend, com a
+-- service_role key, grava nele; não há dado sensível na foto em si para
+-- justificar deixá-lo privado.
+insert into storage.buckets (id, name, public)
+values ('fotos-alunos', 'fotos-alunos', true)
+on conflict (id) do nothing;

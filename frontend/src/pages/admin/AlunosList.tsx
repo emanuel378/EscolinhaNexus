@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { useAlterarStatusAluno, useAlunos, useRemoverAluno } from "../../hooks/useAlunos";
 import { StatusBadge } from "../../components/StatusBadge";
 import { StatusAluno } from "../../types";
+import { iniciais } from "../../utils/nome";
 
 export function AlunosListPage() {
   const [filtro, setFiltro] = useState<StatusAluno | undefined>(undefined);
@@ -71,13 +72,28 @@ export function AlunosListPage() {
               {alunos.map((aluno) => (
                 <tr key={aluno.id} className="border-t border-slate-100">
                   <td className="px-4 py-3">
-                    <Link
-                      to={`/admin/alunos/${aluno.id}`}
-                      className="font-medium text-slate-900 hover:underline"
-                    >
-                      {aluno.usuario.nome}
-                    </Link>
-                    <div className="text-xs text-slate-500">{aluno.usuario.email}</div>
+                    <div className="flex items-center gap-3">
+                      {aluno.fotoUrl ? (
+                        <img
+                          src={aluno.fotoUrl}
+                          alt={aluno.usuario.nome}
+                          className="h-8 w-8 rounded-full object-cover"
+                        />
+                      ) : (
+                        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-200 text-xs font-semibold text-slate-600">
+                          {iniciais(aluno.usuario.nome)}
+                        </div>
+                      )}
+                      <div>
+                        <Link
+                          to={`/admin/alunos/${aluno.id}`}
+                          className="font-medium text-slate-900 hover:underline"
+                        >
+                          {aluno.usuario.nome}
+                        </Link>
+                        <div className="text-xs text-slate-500">{aluno.usuario.email}</div>
+                      </div>
+                    </div>
                   </td>
                   <td className="px-4 py-3 text-slate-600">
                     {aluno.turma?.nome ?? "—"}
