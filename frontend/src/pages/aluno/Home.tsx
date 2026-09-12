@@ -7,7 +7,7 @@ import { useMeuRanking } from "../../hooks/useRanking";
 import { useMeuProximoTreino, useMeuHistoricoMensal } from "../../hooks/useAlunos";
 import { useMeusRelatorios } from "../../hooks/useRelatorios";
 import { RelatorioNotasResumo } from "../../components/RelatorioNotas";
-import { iniciais } from "../../utils/nome";
+import { Avatar } from "../../components/Avatar";
 
 function formatarDiaHora(data: string, horaInicio: string) {
   const dataFormatada = new Date(data + "T00:00:00").toLocaleDateString("pt-BR", {
@@ -44,17 +44,7 @@ export function AlunoHomePage() {
   return (
     <div className="mx-auto max-w-lg">
       <div className="mb-1 flex items-center gap-3">
-        {aluno.fotoUrl ? (
-          <img
-            src={aluno.fotoUrl}
-            alt={aluno.usuario.nome}
-            className="h-12 w-12 rounded-full object-cover"
-          />
-        ) : (
-          <div className="flex h-12 w-12 items-center justify-center rounded-full bg-slate-900 text-sm font-semibold text-white">
-            {iniciais(aluno.usuario.nome)}
-          </div>
-        )}
+        <Avatar nome={aluno.usuario.nome} fotoUrl={aluno.fotoUrl} />
         <h1 className="text-lg font-semibold text-slate-900">
           Olá, {aluno.usuario.nome.split(" ")[0]}! 👋
         </h1>

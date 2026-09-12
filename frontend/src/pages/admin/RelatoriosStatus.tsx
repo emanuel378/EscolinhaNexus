@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { useStatusRelatoriosDoMes } from "../../hooks/useRelatorios";
+import { Avatar } from "../../components/Avatar";
 
 function mesAtual() {
   const agora = new Date();
@@ -47,9 +48,12 @@ export function RelatoriosStatusPage() {
               key={aluno.alunoId}
               className="flex items-center justify-between border-b border-slate-100 px-4 py-3 text-sm last:border-0"
             >
-              <div>
-                <p className="font-medium text-slate-900">{aluno.nome}</p>
-                <p className="text-xs text-slate-500">{aluno.turma ?? "—"}</p>
+              <div className="flex items-center gap-3">
+                <Avatar nome={aluno.nome} fotoUrl={aluno.fotoUrl} tamanho="sm" />
+                <div>
+                  <p className="font-medium text-slate-900">{aluno.nome}</p>
+                  <p className="text-xs text-slate-500">{aluno.turma ?? "—"}</p>
+                </div>
               </div>
               <div className="flex items-center gap-3">
                 <span

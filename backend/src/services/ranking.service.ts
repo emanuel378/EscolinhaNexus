@@ -3,6 +3,7 @@ import { AppError } from "../middlewares/errorHandler";
 
 interface AlunoRankingRow {
   id: string;
+  foto_url: string | null;
   usuarios: { nome: string } | null;
   turmas: { nome: string } | null;
 }
@@ -36,7 +37,7 @@ export async function calcularRanking(params: { mesReferencia?: string; turmaId?
 
   let alunosQuery = supabaseAdmin
     .from("alunos")
-    .select("id, usuarios ( nome ), turmas ( nome )")
+    .select("id, foto_url, usuarios ( nome ), turmas ( nome )")
     .eq("status", "ativo");
 
   if (params.turmaId) {
@@ -71,6 +72,7 @@ export async function calcularRanking(params: { mesReferencia?: string; turmaId?
     .map((a) => ({
       alunoId: a.id,
       nome: a.usuarios?.nome ?? "—",
+      fotoUrl: a.foto_url,
       turma: a.turmas?.nome ?? null,
       pontos: totalPorAluno.get(a.id) ?? 0,
     }))

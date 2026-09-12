@@ -148,6 +148,7 @@ export async function listarRelatoriosDoAluno(alunoId: string) {
 
 interface AlunoAtivoRow {
   id: string;
+  foto_url: string | null;
   usuarios: { nome: string } | null;
   turmas: { nome: string } | null;
 }
@@ -157,7 +158,7 @@ interface AlunoAtivoRow {
 export async function listarStatusRelatoriosDoMes(mesReferencia: string) {
   const { data: alunos, error: alunosError } = await supabaseAdmin
     .from("alunos")
-    .select("id, usuarios ( nome ), turmas ( nome )")
+    .select("id, foto_url, usuarios ( nome ), turmas ( nome )")
     .eq("status", "ativo")
     .returns<AlunoAtivoRow[]>();
 
@@ -184,6 +185,7 @@ export async function listarStatusRelatoriosDoMes(mesReferencia: string) {
     .map((a) => ({
       alunoId: a.id,
       nome: a.usuarios?.nome ?? "—",
+      fotoUrl: a.foto_url,
       turma: a.turmas?.nome ?? null,
       relatorioId: relatorioPorAluno.get(a.id) ?? null,
     }))

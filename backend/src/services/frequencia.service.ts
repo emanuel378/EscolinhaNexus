@@ -11,6 +11,7 @@ interface RegistroInput {
 
 interface AlunoDaTurmaRow {
   id: string;
+  foto_url: string | null;
   usuarios: { nome: string } | null;
 }
 
@@ -26,7 +27,7 @@ export async function listarFichaDeChamada(treinoId: string) {
 
   const { data: alunos, error: alunosError } = await supabaseAdmin
     .from("alunos")
-    .select("id, usuarios ( nome )")
+    .select("id, foto_url, usuarios ( nome )")
     .eq("turma_id", treino.turmaId)
     .eq("status", "ativo")
     .returns<AlunoDaTurmaRow[]>();
@@ -51,6 +52,7 @@ export async function listarFichaDeChamada(treinoId: string) {
     .map((aluno) => ({
       alunoId: aluno.id,
       nome: aluno.usuarios?.nome ?? "—",
+      fotoUrl: aluno.foto_url,
       status: statusPorAluno.get(aluno.id) ?? null,
     }))
     .sort((a, b) => a.nome.localeCompare(b.nome, "pt-BR"));

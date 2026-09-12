@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import { useDashboard } from "../../hooks/useDashboard";
+import { Avatar } from "../../components/Avatar";
 
 function formatarMesReferencia(mesReferencia: string) {
   const [ano, mes] = mesReferencia.split("-");
@@ -105,9 +106,12 @@ export function AdminDashboardPage() {
                 key={item.alunoId}
                 className="flex items-center justify-between rounded-lg px-2 py-1.5 text-sm text-slate-700"
               >
-                <span>
-                  {item.posicao}º {item.nome}
-                </span>
+                <div className="flex items-center gap-2">
+                  <Avatar nome={item.nome} fotoUrl={item.fotoUrl} tamanho="sm" />
+                  <span>
+                    {item.posicao}º {item.nome}
+                  </span>
+                </div>
                 <span className="font-medium text-slate-900">{item.pontos} pts</span>
               </div>
             ))}

@@ -94,6 +94,7 @@ export type StatusFrequencia = "presente" | "falta" | "falta_justificada";
 export interface FichaChamadaItem {
   alunoId: string;
   nome: string;
+  fotoUrl: string | null;
   status: StatusFrequencia | null;
 }
 
@@ -211,6 +212,7 @@ export type AtualizarRelatorioInput = Partial<Omit<CriarRelatorioInput, "mesRefe
 export interface StatusRelatorioItem {
   alunoId: string;
   nome: string;
+  fotoUrl: string | null;
   turma: string | null;
   relatorioId: string | null;
 }
@@ -223,6 +225,7 @@ export interface StatusRelatoriosMes {
 export interface RankingItem {
   alunoId: string;
   nome: string;
+  fotoUrl: string | null;
   turma: string | null;
   pontos: number;
   posicao: number;

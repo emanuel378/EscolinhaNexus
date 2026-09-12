@@ -1,6 +1,6 @@
 import { ChangeEvent, useRef, useState } from "react";
 import { useRemoverFotoAluno, useUploadFotoAluno } from "../hooks/useAlunos";
-import { iniciais } from "../utils/nome";
+import { Avatar } from "./Avatar";
 
 export function FotoAlunoUpload({
   alunoId,
@@ -41,13 +41,7 @@ export function FotoAlunoUpload({
 
   return (
     <div className="flex items-center gap-4">
-      {fotoUrl ? (
-        <img src={fotoUrl} alt={nome} className="h-16 w-16 rounded-full object-cover" />
-      ) : (
-        <div className="flex h-16 w-16 items-center justify-center rounded-full bg-slate-900 text-lg font-semibold text-white">
-          {iniciais(nome)}
-        </div>
-      )}
+      <Avatar nome={nome} fotoUrl={fotoUrl} tamanho="lg" />
       <div>
         <div className="flex gap-2">
           <button
