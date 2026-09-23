@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import { useRemoverTreino, useTreinos } from "../../hooks/useTreinos";
 import { useTurmas } from "../../hooks/useTurmas";
+import { Spinner } from "../../components/Spinner";
 
 export function TreinosListPage() {
   const [turmaId, setTurmaId] = useState<string>("");
@@ -19,12 +20,14 @@ export function TreinosListPage() {
   return (
     <div>
       <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
-        <h1 className="text-lg font-semibold text-slate-900">Treinos</h1>
+        <h1 className="font-display text-2xl font-bold uppercase tracking-wide text-white">
+          Treinos
+        </h1>
         <div className="flex items-center gap-2">
           <select
             value={turmaId}
             onChange={(e) => setTurmaId(e.target.value)}
-            className="rounded-lg border border-slate-300 px-3 py-2 text-sm"
+            className="rounded-lg border border-white/10 bg-nexus-surface px-3 py-2 text-sm text-white outline-none transition focus:border-nexus-primary focus:ring-2 focus:ring-nexus-primary/40"
           >
             <option value="">Todas as turmas</option>
             {turmas?.map((t) => (
@@ -35,23 +38,29 @@ export function TreinosListPage() {
           </select>
           <Link
             to="/admin/treinos/novo"
-            className="rounded-lg bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-800"
+            className="rounded-lg bg-nexus-primary px-4 py-2 text-sm font-semibold text-nexus-bg shadow-nexus-glow transition hover:bg-nexus-highlight"
           >
             + Novo treino
           </Link>
         </div>
       </div>
 
-      {isLoading && <p className="text-sm text-slate-500">Carregando treinos...</p>}
-      {isError && <p className="text-sm text-status-vermelho">Erro ao carregar treinos.</p>}
+      {isLoading && (
+        <div className="flex items-center gap-2 text-sm text-slate-400">
+          <Spinner /> Carregando treinos...
+        </div>
+      )}
+      {isError && <p className="text-sm text-red-400">Erro ao carregar treinos.</p>}
       {treinos && treinos.length === 0 && (
-        <p className="text-sm text-slate-500">Nenhum treino cadastrado.</p>
+        <div className="rounded-xl border border-dashed border-white/10 bg-nexus-surface/50 p-8 text-center text-sm text-slate-400">
+          Nenhum treino cadastrado.
+        </div>
       )}
 
       {treinos && treinos.length > 0 && (
-        <div className="overflow-hidden rounded-xl border border-slate-200 bg-white">
+        <div className="overflow-hidden rounded-xl border border-white/10 bg-nexus-surface">
           <table className="w-full text-left text-sm">
-            <thead className="bg-slate-50 text-slate-500">
+            <thead className="bg-white/5 text-slate-400">
               <tr>
                 <th className="px-4 py-3 font-medium">Data</th>
                 <th className="px-4 py-3 font-medium">Turma</th>
@@ -62,32 +71,32 @@ export function TreinosListPage() {
             </thead>
             <tbody>
               {treinos.map((treino) => (
-                <tr key={treino.id} className="border-t border-slate-100">
-                  <td className="px-4 py-3">
+                <tr key={treino.id} className="border-t border-white/5">
+                  <td className="px-4 py-3 text-white">
                     {new Date(treino.data).toLocaleDateString("pt-BR")}
                   </td>
-                  <td className="px-4 py-3 text-slate-600">{treino.turma?.nome ?? "—"}</td>
-                  <td className="px-4 py-3 text-slate-600">
+                  <td className="px-4 py-3 text-slate-400">{treino.turma?.nome ?? "—"}</td>
+                  <td className="px-4 py-3 text-slate-400">
                     {treino.horaInicio}–{treino.horaFim}
                   </td>
-                  <td className="px-4 py-3 text-slate-600">{treino.local}</td>
+                  <td className="px-4 py-3 text-slate-400">{treino.local}</td>
                   <td className="px-4 py-3">
                     <div className="flex justify-end gap-2">
                       <Link
                         to={`/admin/treinos/${treino.id}/chamada`}
-                        className="rounded-lg border border-slate-300 px-3 py-1 text-xs hover:bg-slate-100"
+                        className="rounded-lg border border-white/10 px-3 py-1 text-xs text-slate-300 transition hover:bg-white/10 hover:text-white"
                       >
                         Chamada
                       </Link>
                       <Link
                         to={`/admin/treinos/${treino.id}/editar`}
-                        className="rounded-lg border border-slate-300 px-3 py-1 text-xs hover:bg-slate-100"
+                        className="rounded-lg border border-white/10 px-3 py-1 text-xs text-slate-300 transition hover:bg-white/10 hover:text-white"
                       >
                         Editar
                       </Link>
                       <button
                         onClick={() => handleRemover(treino.id)}
-                        className="rounded-lg border border-red-200 px-3 py-1 text-xs text-status-vermelho hover:bg-red-50"
+                        className="rounded-lg border border-status-vermelho/30 px-3 py-1 text-xs text-status-vermelho transition hover:bg-status-vermelho/10"
                       >
                         Remover
                       </button>

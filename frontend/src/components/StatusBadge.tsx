@@ -3,11 +3,11 @@ interface StatusBadgeProps {
 }
 
 const estilos: Record<StatusBadgeProps["status"], string> = {
-  ativo: "bg-green-100 text-status-verde",
-  pago: "bg-green-100 text-status-verde",
-  pendente: "bg-yellow-100 text-status-amarelo",
-  inativo: "bg-red-100 text-status-vermelho",
-  atrasado: "bg-red-100 text-status-vermelho",
+  ativo: "border-status-verde/30 bg-status-verde/10 text-status-verde",
+  pago: "border-status-verde/30 bg-status-verde/10 text-status-verde",
+  pendente: "border-status-amarelo/30 bg-status-amarelo/10 text-status-amarelo",
+  inativo: "border-status-vermelho/30 bg-status-vermelho/10 text-status-vermelho",
+  atrasado: "border-status-vermelho/30 bg-status-vermelho/10 text-status-vermelho",
 };
 
 const rotulos: Record<StatusBadgeProps["status"], string> = {
@@ -21,7 +21,7 @@ const rotulos: Record<StatusBadgeProps["status"], string> = {
 export function StatusBadge({ status }: StatusBadgeProps) {
   return (
     <span
-      className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${estilos[status]}`}
+      className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-[11px] font-semibold uppercase tracking-wide ${estilos[status]}`}
     >
       {rotulos[status]}
     </span>

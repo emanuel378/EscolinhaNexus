@@ -3,6 +3,10 @@ import { useNavigate, useParams } from "react-router-dom";
 import { useAluno, useAtualizarAluno, useCriarAluno } from "../../hooks/useAlunos";
 import { useTurmas } from "../../hooks/useTurmas";
 
+const inputClass =
+  "w-full rounded-lg border border-white/10 bg-nexus-bg/60 px-3 py-2 text-sm text-white placeholder-slate-500 outline-none transition focus:border-nexus-primary focus:ring-2 focus:ring-nexus-primary/40";
+const labelClass = "mb-1 block text-sm font-medium text-slate-300";
+
 export function AlunoFormPage() {
   const { id } = useParams<{ id: string }>();
   const modoEdicao = !!id;
@@ -64,81 +68,69 @@ export function AlunoFormPage() {
 
   return (
     <div className="mx-auto max-w-lg">
-      <h1 className="mb-6 text-lg font-semibold text-slate-900">
+      <h1 className="mb-6 font-display text-2xl font-bold uppercase tracking-wide text-white">
         {modoEdicao ? "Editar aluno" : "Novo aluno"}
       </h1>
 
-      <form onSubmit={handleSubmit} className="space-y-4 rounded-xl border border-slate-200 bg-white p-6">
+      <form
+        onSubmit={handleSubmit}
+        className="space-y-4 rounded-xl border border-white/10 bg-nexus-surface p-6"
+      >
         <div>
-          <label className="mb-1 block text-sm font-medium text-slate-700">Nome</label>
-          <input
-            required
-            value={nome}
-            onChange={(e) => setNome(e.target.value)}
-            className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
-          />
+          <label className={labelClass}>Nome</label>
+          <input required value={nome} onChange={(e) => setNome(e.target.value)} className={inputClass} />
         </div>
 
         <div>
-          <label className="mb-1 block text-sm font-medium text-slate-700">Email</label>
+          <label className={labelClass}>Email</label>
           <input
             type="email"
             required
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+            className={inputClass}
           />
         </div>
 
         {!modoEdicao && (
           <div>
-            <label className="mb-1 block text-sm font-medium text-slate-700">
-              Senha inicial
-            </label>
+            <label className={labelClass}>Senha inicial</label>
             <input
               type="password"
               required
               minLength={6}
               value={senha}
               onChange={(e) => setSenha(e.target.value)}
-              className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+              className={inputClass}
               placeholder="Mínimo 6 caracteres"
             />
           </div>
         )}
 
         <div>
-          <label className="mb-1 block text-sm font-medium text-slate-700">
-            Data de nascimento
-          </label>
+          <label className={labelClass}>Data de nascimento</label>
           <input
             type="date"
             required
             value={dataNascimento}
             onChange={(e) => setDataNascimento(e.target.value)}
-            className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+            className={inputClass}
           />
         </div>
 
         <div>
-          <label className="mb-1 block text-sm font-medium text-slate-700">
-            Telefone
-          </label>
+          <label className={labelClass}>Telefone</label>
           <input
             value={telefone}
             onChange={(e) => setTelefone(e.target.value)}
-            className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+            className={inputClass}
             placeholder="(00) 00000-0000"
           />
         </div>
 
         <div>
-          <label className="mb-1 block text-sm font-medium text-slate-700">Turma</label>
-          <select
-            value={turmaId}
-            onChange={(e) => setTurmaId(e.target.value)}
-            className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
-          >
+          <label className={labelClass}>Turma</label>
+          <select value={turmaId} onChange={(e) => setTurmaId(e.target.value)} className={inputClass}>
             <option value="">Sem turma</option>
             {turmas?.map((t) => (
               <option key={t.id} value={t.id}>
@@ -148,20 +140,20 @@ export function AlunoFormPage() {
           </select>
         </div>
 
-        {erro && <p className="text-sm text-status-vermelho">{erro}</p>}
+        {erro && <p className="text-sm text-red-400">{erro}</p>}
 
         <div className="flex justify-end gap-2 pt-2">
           <button
             type="button"
             onClick={() => navigate("/admin/alunos")}
-            className="rounded-lg border border-slate-300 px-4 py-2 text-sm hover:bg-slate-100"
+            className="rounded-lg border border-white/10 px-4 py-2 text-sm text-slate-300 transition hover:bg-white/10 hover:text-white"
           >
             Cancelar
           </button>
           <button
             type="submit"
             disabled={enviando}
-            className="rounded-lg bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-800 disabled:opacity-60"
+            className="rounded-lg bg-nexus-primary px-4 py-2 text-sm font-semibold text-nexus-bg shadow-nexus-glow transition hover:bg-nexus-highlight disabled:opacity-60"
           >
             {enviando ? "Salvando..." : "Salvar"}
           </button>

@@ -143,3 +143,68 @@ export interface AtualizarMensalidadeInput {
   dataPagamento?: string | null;
   status?: StatusMensalidade;
 }
+
+export interface HabilidadesTecnico {
+  controleBola: number;
+  levantamento: number;
+  ataque: number;
+  saque: number;
+  recepcao: number;
+  defesa: number;
+  viradaBola: number;
+}
+
+export interface HabilidadesFisico {
+  resistencia: number;
+  velocidade: number;
+  agilidade: number;
+  condicionamento: number;
+  intensidade: number;
+}
+
+export interface HabilidadesTatico {
+  posicionamento: number;
+  tomadaDecisao: number;
+  leituraJogo: number;
+  estrategia: number;
+}
+
+export interface HabilidadesMental {
+  comprometimento: number;
+  concentracao: number;
+  disciplina: number;
+  confianca: number;
+  trabalhoEquipe: number;
+}
+
+export interface Habilidades {
+  tecnico: HabilidadesTecnico;
+  fisico: HabilidadesFisico;
+  tatico: HabilidadesTatico;
+  mental: HabilidadesMental;
+}
+
+export interface Relatorio {
+  id: string;
+  alunoId: string;
+  mesReferencia: string;
+  pontosFortes: string;
+  pontosMelhorar: string;
+  objetivoProximoMes: string;
+  criadoEm: string;
+  habilidades: Habilidades;
+  medias: {
+    tecnico: number;
+    fisico: number;
+    tatico: number;
+    mental: number;
+    geral: number;
+  };
+}
+
+export interface EnviarRelatorioInput extends Habilidades {
+  mesReferencia: string;
+  pontosFortes: string;
+  pontosMelhorar: string;
+  objetivoProximoMes: string;
+}

@@ -9,5 +9,34 @@ body,
 }
 
 body {
-  @apply bg-slate-50 text-slate-900;
+  @apply bg-nexus-bg font-sans text-slate-200;
+}
+
+::selection {
+  @apply bg-nexus-primary/30 text-white;
+}
+
+* {
+  scrollbar-color: #00b4ff33 transparent;
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: #00b4ff33;
+  border-radius: 9999px;
+  border: 2px solid transparent;
+  background-clip: content-box;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background-color: #00b4ff66;
+  background-clip: content-box;
 }

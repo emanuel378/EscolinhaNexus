@@ -1,5 +1,6 @@
 import { Navigate, Outlet } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import { Spinner } from "./Spinner";
 import { Role } from "../types";
 
 interface ProtectedRouteProps {
@@ -11,7 +12,8 @@ export function ProtectedRoute({ allowedRoles }: ProtectedRouteProps) {
 
   if (carregando) {
     return (
-      <div className="flex h-screen items-center justify-center text-slate-500">
+      <div className="flex h-screen flex-col items-center justify-center gap-3 bg-nexus-bg text-sm text-slate-400">
+        <Spinner size="md" />
         Carregando...
       </div>
     );
