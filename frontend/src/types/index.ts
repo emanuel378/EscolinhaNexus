@@ -41,6 +41,7 @@ export interface CriarAlunoInput {
   senha: string;
   dataNascimento: string;
   telefone?: string;
+  dataEntrada?: string;
   turmaId?: string;
   fotoUrl?: string;
 }
@@ -50,6 +51,7 @@ export interface AtualizarAlunoInput {
   email?: string;
   dataNascimento?: string;
   telefone?: string;
+  dataEntrada?: string;
   turmaId?: string | null;
   fotoUrl?: string;
   status?: StatusAluno;
@@ -92,6 +94,7 @@ export type StatusFrequencia = "presente" | "falta" | "falta_justificada";
 export interface FichaChamadaItem {
   alunoId: string;
   nome: string;
+  fotoUrl: string | null;
   status: StatusFrequencia | null;
 }
 
@@ -144,47 +147,50 @@ export interface AtualizarMensalidadeInput {
   status?: StatusMensalidade;
 }
 
-export interface HabilidadesTecnico {
-  controleBola: number;
-  levantamento: number;
-  ataque: number;
-  saque: number;
-  recepcao: number;
-  defesa: number;
-  viradaBola: number;
+export interface Pontuacao {
+  id: string;
+  alunoId: string;
+  pontos: number;
+  motivo: string;
+  data: string;
 }
 
-export interface HabilidadesFisico {
-  resistencia: number;
-  velocidade: number;
-  agilidade: number;
-  condicionamento: number;
-  intensidade: number;
+export interface HistoricoPontuacao {
+  total: number;
+  historico: Pontuacao[];
 }
 
-export interface HabilidadesTatico {
-  posicionamento: number;
-  tomadaDecisao: number;
-  leituraJogo: number;
-  estrategia: number;
+export interface LancarPontuacaoInput {
+  pontos: number;
+  motivo: string;
+  data?: string;
 }
 
-export interface HabilidadesMental {
-  comprometimento: number;
-  concentracao: number;
-  disciplina: number;
-  confianca: number;
-  trabalhoEquipe: number;
+export interface NotasRelatorio {
+  tecControleBola: number;
+  tecLevantamento: number;
+  tecAtaque: number;
+  tecSaque: number;
+  tecRecepcao: number;
+  tecDefesa: number;
+  tecViradaBola: number;
+  fisResistencia: number;
+  fisVelocidade: number;
+  fisAgilidade: number;
+  fisCondicionamento: number;
+  fisIntensidade: number;
+  tatPosicionamento: number;
+  tatTomadaDecisao: number;
+  tatLeituraJogo: number;
+  tatEstrategia: number;
+  menComprometimento: number;
+  menConcentracao: number;
+  menDisciplina: number;
+  menConfianca: number;
+  menTrabalhoEquipe: number;
 }
 
-export interface Habilidades {
-  tecnico: HabilidadesTecnico;
-  fisico: HabilidadesFisico;
-  tatico: HabilidadesTatico;
-  mental: HabilidadesMental;
-}
-
-export interface Relatorio {
+export interface Relatorio extends NotasRelatorio {
   id: string;
   alunoId: string;
   mesReferencia: string;
@@ -192,19 +198,87 @@ export interface Relatorio {
   pontosMelhorar: string;
   objetivoProximoMes: string;
   criadoEm: string;
-  habilidades: Habilidades;
-  medias: {
-    tecnico: number;
-    fisico: number;
-    tatico: number;
-    mental: number;
-    geral: number;
-  };
 }
 
-export interface EnviarRelatorioInput extends Habilidades {
+export interface CriarRelatorioInput extends NotasRelatorio {
   mesReferencia: string;
   pontosFortes: string;
   pontosMelhorar: string;
   objetivoProximoMes: string;
+}
+
+export type AtualizarRelatorioInput = Partial<Omit<CriarRelatorioInput, "mesReferencia">>;
+
+export interface StatusRelatorioItem {
+  alunoId: string;
+  nome: string;
+  fotoUrl: string | null;
+  turma: string | null;
+  relatorioId: string | null;
+}
+
+export interface StatusRelatoriosMes {
+  mesReferencia: string;
+  alunos: StatusRelatorioItem[];
+}
+
+export interface RankingItem {
+  alunoId: string;
+  nome: string;
+  fotoUrl: string | null;
+  turma: string | null;
+  pontos: number;
+  posicao: number;
+}
+
+export interface Ranking {
+  mesReferencia: string;
+  ranking: RankingItem[];
+}
+
+export interface ProximoTreinoResumo {
+  id: string;
+  data: string;
+  horaInicio: string;
+  horaFim: string;
+  local: string;
+  tipo: string;
+  turma: string | null;
+}
+
+export interface DashboardResumo {
+  mesReferencia: string;
+  alunosAtivos: number;
+  alunosInativos: number;
+  alunosNovos: number;
+  alunosSairamEsteMes: number;
+  pagamentos: { pago: number; pendente: number; atrasado: number };
+  frequenciaMediaMes: number;
+  relatoriosLancados: number;
+  relatoriosTotal: number;
+  rankingTop: RankingItem[];
+  proximosTreinos: ProximoTreinoResumo[];
+}
+
+export interface CalendarioDia {
+  treinoId: string;
+  data: string;
+  horaInicio: string;
+  horaFim: string;
+  tipo: string;
+  local: string;
+  status: StatusFrequencia | null;
+}
+
+export interface CalendarioMensal {
+  mesReferencia: string;
+  dias: CalendarioDia[];
+}
+
+export interface HistoricoMensalItem {
+  mesReferencia: string;
+  posicao: number | null;
+  pontos: number;
+  frequenciaPercentual: number | null;
+  relatorioDisponivel: boolean;
 }

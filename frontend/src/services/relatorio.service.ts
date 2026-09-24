@@ -1,24 +1,42 @@
 import { api } from "./api";
-import { EnviarRelatorioInput, Relatorio } from "../types";
+import {
+  AtualizarRelatorioInput,
+  CriarRelatorioInput,
+  Relatorio,
+  StatusRelatoriosMes,
+} from "../types";
 
 export async function listarRelatoriosDoAluno(alunoId: string): Promise<Relatorio[]> {
   const { data } = await api.get<Relatorio[]>(`/alunos/${alunoId}/relatorios`);
   return data;
 }
 
-export async function meusRelatorios(): Promise<Relatorio[]> {
-  const { data } = await api.get<Relatorio[]>("/alunos/me/relatorios");
-  return data;
-}
-
-export async function enviarRelatorio(
+export async function criarRelatorio(
   alunoId: string,
-  input: EnviarRelatorioInput
+  input: CriarRelatorioInput
 ): Promise<Relatorio> {
   const { data } = await api.post<Relatorio>(`/alunos/${alunoId}/relatorios`, input);
   return data;
 }
 
+export async function atualizarRelatorio(
+  id: string,
+  input: AtualizarRelatorioInput
+): Promise<Relatorio> {
+  const { data } = await api.put<Relatorio>(`/relatorios/${id}`, input);
+  return data;
+}
+
 export async function removerRelatorio(id: string): Promise<void> {
   await api.delete(`/relatorios/${id}`);
+}
+
+export async function buscarMeusRelatorios(): Promise<Relatorio[]> {
+  const { data } = await api.get<Relatorio[]>("/alunos/me/relatorios");
+  return data;
+}
+
+export async function buscarStatusRelatoriosDoMes(mesReferencia?: string): Promise<StatusRelatoriosMes> {
+  const { data } = await api.get<StatusRelatoriosMes>("/relatorios", { params: { mesReferencia } });
+  return data;
 }

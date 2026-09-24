@@ -8,12 +8,22 @@ import {
   useMensalidadesDoAluno,
   useRemoverMensalidade,
 } from "../../hooks/useMensalidades";
+import {
+  useLancarPontuacao,
+  usePontuacoesDoAluno,
+  useRemoverPontuacao,
+} from "../../hooks/usePontuacoes";
+import {
+  useCriarRelatorio,
+  useRelatoriosDoAluno,
+  useRemoverRelatorio,
+} from "../../hooks/useRelatorios";
 import { StatusBadge } from "../../components/StatusBadge";
 import { Spinner } from "../../components/Spinner";
-import { SkillBar } from "../../components/SkillBar";
-import { RelatorioForm } from "../../components/RelatorioForm";
-import { useEnviarRelatorio, useRelatoriosDoAluno, useRemoverRelatorio } from "../../hooks/useRelatorios";
-import { StatusMensalidade } from "../../types";
+import { RelatorioNotasForm, RelatorioNotasResumo } from "../../components/RelatorioNotas";
+import { FotoAlunoUpload } from "../../components/FotoAlunoUpload";
+import { NotasRelatorio, StatusMensalidade } from "../../types";
+import { valoresIniciais } from "../../utils/relatorio";
 
 const inputClass =
   "rounded-lg border border-white/10 bg-nexus-bg/60 px-2 py-1.5 text-xs text-white placeholder-slate-500 outline-none transition focus:border-nexus-primary focus:ring-2 focus:ring-nexus-primary/40";
@@ -228,23 +238,156 @@ function SecaoMensalidades({ alunoId }: { alunoId: string }) {
   );
 }
 
-function formatarMesReferencia(mesReferencia: string) {
-  const [ano, mes] = mesReferencia.split("-");
-  const data = new Date(Number(ano), Number(mes) - 1, 1);
-  const texto = data.toLocaleDateString("pt-BR", { month: "long", year: "numeric" });
-  return texto.charAt(0).toUpperCase() + texto.slice(1);
+function SecaoPontuacao({ alunoId }: { alunoId: string }) {
+  const { data, isLoading } = usePontuacoesDoAluno(alunoId);
+  const lancarPontuacao = useLancarPontuacao(alunoId);
+  const removerPontuacao = useRemoverPontuacao(alunoId);
+
+  const [mostrarForm, setMostrarForm] = useState(false);
+  const [pontos, setPontos] = useState("");
+  const [motivo, setMotivo] = useState("");
+  const [erro, setErro] = useState<string | null>(null);
+
+  async function handleAdicionar(e: FormEvent) {
+    e.preventDefault();
+    setErro(null);
+    try {
+      await lancarPontuacao.mutateAsync({ pontos: Number(pontos), motivo });
+      setPontos("");
+      setMotivo("");
+      setMostrarForm(false);
+    } catch {
+      setErro("Não foi possível lançar a pontuação.");
+    }
+  }
+
+  async function handleRemover(id: string) {
+    if (!confirm("Remover este lançamento de pontuação?")) return;
+    await removerPontuacao.mutateAsync(id);
+  }
+
+  return (
+    <div className="rounded-xl border border-white/10 bg-nexus-surface p-6">
+      <div className="mb-3 flex items-center justify-between">
+        <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-300">Pontuação</h2>
+        <button
+          onClick={() => setMostrarForm((v) => !v)}
+          className="rounded-lg border border-white/10 px-3 py-1 text-xs text-slate-300 transition hover:bg-white/10 hover:text-white"
+        >
+          {mostrarForm ? "Cancelar" : "+ Lançar pontos"}
+        </button>
+      </div>
+
+      {data && (
+        <p className="mb-4 font-display text-3xl font-bold text-nexus-gold">{data.total} pts</p>
+      )}
+
+      {mostrarForm && (
+        <form onSubmit={handleAdicionar} className="mb-4 space-y-2 rounded-lg bg-white/5 p-3">
+          <div className="grid grid-cols-3 gap-2">
+            <input
+              required
+              type="number"
+              placeholder="Pontos (ex: 10 ou -5)"
+              value={pontos}
+              onChange={(e) => setPontos(e.target.value)}
+              className={inputClass}
+            />
+            <input
+              required
+              placeholder="Motivo"
+              value={motivo}
+              onChange={(e) => setMotivo(e.target.value)}
+              className={`col-span-2 ${inputClass}`}
+            />
+          </div>
+          {erro && <p className="text-xs text-red-400">{erro}</p>}
+          <button
+            type="submit"
+            disabled={lancarPontuacao.isPending}
+            className="w-full rounded-lg bg-nexus-primary py-1.5 text-xs font-semibold text-nexus-bg shadow-nexus-glow transition hover:bg-nexus-highlight disabled:opacity-60"
+          >
+            {lancarPontuacao.isPending ? "Salvando..." : "Lançar"}
+          </button>
+        </form>
+      )}
+
+      {isLoading && (
+        <div className="flex items-center gap-2 text-sm text-slate-400">
+          <Spinner /> Carregando...
+        </div>
+      )}
+      {data && data.historico.length === 0 && (
+        <p className="text-sm text-slate-400">Nenhuma pontuação lançada.</p>
+      )}
+
+      {data && data.historico.length > 0 && (
+        <div className="max-h-48 space-y-1 overflow-y-auto text-xs">
+          {data.historico.map((p) => (
+            <div key={p.id} className="flex items-center justify-between border-t border-white/5 py-1.5">
+              <span className="text-slate-400">
+                {new Date(p.data).toLocaleDateString("pt-BR")} · {p.motivo}
+              </span>
+              <div className="flex items-center gap-2">
+                <span className={p.pontos >= 0 ? "text-status-verde" : "text-status-vermelho"}>
+                  {p.pontos >= 0 ? `+${p.pontos}` : p.pontos}
+                </span>
+                <button
+                  onClick={() => handleRemover(p.id)}
+                  className="text-status-vermelho hover:underline"
+                >
+                  Remover
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
 }
 
 function SecaoRelatorios({ alunoId, abrirFormInicial }: { alunoId: string; abrirFormInicial: boolean }) {
   const { data: relatorios, isLoading } = useRelatoriosDoAluno(alunoId);
-  const enviarRelatorio = useEnviarRelatorio(alunoId);
+  const criarRelatorio = useCriarRelatorio(alunoId);
   const removerRelatorio = useRemoverRelatorio(alunoId);
 
   const [mostrarForm, setMostrarForm] = useState(abrirFormInicial);
-  const [expandidoId, setExpandidoId] = useState<string | null>(null);
+  const [mesReferencia, setMesReferencia] = useState("");
+  const [notas, setNotas] = useState<NotasRelatorio>(valoresIniciais);
+  const [pontosFortes, setPontosFortes] = useState("");
+  const [pontosMelhorar, setPontosMelhorar] = useState("");
+  const [objetivoProximoMes, setObjetivoProximoMes] = useState("");
+  const [erro, setErro] = useState<string | null>(null);
+
+  function handleMudarNota(campo: keyof NotasRelatorio, valor: number) {
+    setNotas((atual) => ({ ...atual, [campo]: valor }));
+  }
+
+  async function handleAdicionar(e: FormEvent) {
+    e.preventDefault();
+    setErro(null);
+    try {
+      await criarRelatorio.mutateAsync({
+        mesReferencia,
+        ...notas,
+        pontosFortes,
+        pontosMelhorar,
+        objetivoProximoMes,
+      });
+      setMesReferencia("");
+      setNotas(valoresIniciais());
+      setPontosFortes("");
+      setPontosMelhorar("");
+      setObjetivoProximoMes("");
+      setMostrarForm(false);
+    } catch {
+      setErro("Não foi possível criar o relatório (verifique se o mês já não foi lançado).");
+    }
+  }
 
   async function handleRemover(id: string) {
-    if (!confirm("Remover este relatório de desempenho?")) return;
+    if (!confirm("Remover este relatório?")) return;
     await removerRelatorio.mutateAsync(id);
   }
 
@@ -261,19 +404,56 @@ function SecaoRelatorios({ alunoId, abrirFormInicial }: { alunoId: string; abrir
           onClick={() => setMostrarForm((v) => !v)}
           className="rounded-lg bg-nexus-primary px-3 py-1 text-xs font-semibold text-nexus-bg transition hover:bg-nexus-highlight"
         >
-          {mostrarForm ? "Cancelar" : "+ Enviar relatório"}
+          {mostrarForm ? "Cancelar" : "+ Novo relatório"}
         </button>
       </div>
 
       {mostrarForm && (
-        <RelatorioForm
-          enviando={enviarRelatorio.isPending}
-          onCancelar={() => setMostrarForm(false)}
-          onEnviar={async (input) => {
-            await enviarRelatorio.mutateAsync(input);
-            setMostrarForm(false);
-          }}
-        />
+        <form onSubmit={handleAdicionar} className="mb-4 space-y-3 rounded-lg bg-white/5 p-3">
+          <div>
+            <label className="mb-1 block text-xs font-medium text-slate-300">Mês de referência</label>
+            <input
+              required
+              placeholder="YYYY-MM"
+              value={mesReferencia}
+              onChange={(e) => setMesReferencia(e.target.value)}
+              className={inputClass}
+            />
+          </div>
+          <RelatorioNotasForm notas={notas} onChange={handleMudarNota} />
+          <textarea
+            required
+            placeholder="Pontos fortes"
+            value={pontosFortes}
+            onChange={(e) => setPontosFortes(e.target.value)}
+            className={`w-full ${inputClass}`}
+            rows={2}
+          />
+          <textarea
+            required
+            placeholder="Pontos a melhorar"
+            value={pontosMelhorar}
+            onChange={(e) => setPontosMelhorar(e.target.value)}
+            className={`w-full ${inputClass}`}
+            rows={2}
+          />
+          <textarea
+            required
+            placeholder="Objetivo para o próximo mês"
+            value={objetivoProximoMes}
+            onChange={(e) => setObjetivoProximoMes(e.target.value)}
+            className={`w-full ${inputClass}`}
+            rows={2}
+          />
+          {erro && <p className="text-xs text-red-400">{erro}</p>}
+          <button
+            type="submit"
+            disabled={criarRelatorio.isPending}
+            className="w-full rounded-lg bg-nexus-primary py-1.5 text-xs font-semibold text-nexus-bg shadow-nexus-glow transition hover:bg-nexus-highlight disabled:opacity-60"
+          >
+            {criarRelatorio.isPending ? "Salvando..." : "Criar relatório"}
+          </button>
+        </form>
       )}
 
       {isLoading && (
@@ -282,68 +462,37 @@ function SecaoRelatorios({ alunoId, abrirFormInicial }: { alunoId: string; abrir
         </div>
       )}
       {relatorios && relatorios.length === 0 && (
-        <p className="text-sm text-slate-400">Nenhum relatório enviado ainda.</p>
+        <p className="text-sm text-slate-400">Nenhum relatório lançado.</p>
       )}
 
       {relatorios && relatorios.length > 0 && (
-        <div className="space-y-2">
-          {relatorios.map((relatorio) => {
-            const expandido = expandidoId === relatorio.id;
-            return (
-              <div key={relatorio.id} className="border-t border-white/5 pt-2 first:border-0 first:pt-0">
+        <div className="space-y-3">
+          {relatorios.map((r) => (
+            <div key={r.id} className="rounded-lg border border-white/5 p-3 text-xs">
+              <div className="mb-2 flex items-center justify-between">
+                <p className="font-medium text-white">{r.mesReferencia}</p>
                 <button
-                  onClick={() => setExpandidoId(expandido ? null : relatorio.id)}
-                  className="flex w-full items-center justify-between gap-3 py-1 text-left"
+                  onClick={() => handleRemover(r.id)}
+                  className="text-status-vermelho hover:underline"
                 >
-                  <span className="text-sm font-medium text-white">
-                    {formatarMesReferencia(relatorio.mesReferencia)}
-                  </span>
-                  <span className="flex items-center gap-2">
-                    <span className="rounded-full border border-nexus-primary/30 bg-nexus-primary/10 px-2.5 py-0.5 text-[11px] font-semibold text-nexus-primary">
-                      Geral {relatorio.medias.geral.toFixed(1)}
-                    </span>
-                    <svg
-                      viewBox="0 0 20 20"
-                      className={`h-4 w-4 fill-slate-400 transition-transform ${expandido ? "rotate-180" : ""}`}
-                    >
-                      <path d="M5.5 7.5l4.5 4.5 4.5-4.5" stroke="currentColor" strokeWidth="1.5" fill="none" />
-                    </svg>
-                  </span>
+                  Remover
                 </button>
-
-                {expandido && (
-                  <div className="mt-3 space-y-4 pb-2">
-                    <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-                      <SkillBar label="Técnico" value={relatorio.medias.tecnico} />
-                      <SkillBar label="Físico" value={relatorio.medias.fisico} />
-                      <SkillBar label="Tático" value={relatorio.medias.tatico} />
-                      <SkillBar label="Mental" value={relatorio.medias.mental} />
-                    </div>
-                    <div className="space-y-2 text-xs">
-                      <p>
-                        <span className="font-semibold text-nexus-highlight">Pontos fortes: </span>
-                        <span className="text-slate-300">{relatorio.pontosFortes}</span>
-                      </p>
-                      <p>
-                        <span className="font-semibold text-nexus-highlight">A melhorar: </span>
-                        <span className="text-slate-300">{relatorio.pontosMelhorar}</span>
-                      </p>
-                      <p>
-                        <span className="font-semibold text-nexus-highlight">Objetivo: </span>
-                        <span className="text-slate-300">{relatorio.objetivoProximoMes}</span>
-                      </p>
-                    </div>
-                    <button
-                      onClick={() => handleRemover(relatorio.id)}
-                      className="text-xs text-status-vermelho hover:underline"
-                    >
-                      Remover relatório
-                    </button>
-                  </div>
-                )}
               </div>
-            );
-          })}
+              <RelatorioNotasResumo notas={r} />
+              <p className="mt-2 text-slate-400">
+                <span className="font-medium text-nexus-highlight">Pontos fortes:</span>{" "}
+                {r.pontosFortes}
+              </p>
+              <p className="text-slate-400">
+                <span className="font-medium text-nexus-highlight">A melhorar:</span>{" "}
+                {r.pontosMelhorar}
+              </p>
+              <p className="text-slate-400">
+                <span className="font-medium text-nexus-highlight">Objetivo:</span>{" "}
+                {r.objetivoProximoMes}
+              </p>
+            </div>
+          ))}
         </div>
       )}
     </div>
@@ -379,6 +528,10 @@ export function AlunoDetailPage() {
         </Link>
       </div>
 
+      <div className="rounded-xl border border-white/10 bg-nexus-surface p-6">
+        <FotoAlunoUpload alunoId={aluno.id} nome={aluno.usuario.nome} fotoUrl={aluno.fotoUrl} />
+      </div>
+
       <div className="space-y-4 rounded-xl border border-white/10 bg-nexus-surface p-6 text-sm">
         <div className="flex justify-between">
           <span className="text-slate-400">Status</span>
@@ -412,6 +565,7 @@ export function AlunoDetailPage() {
 
       <SecaoRelatorios alunoId={aluno.id} abrirFormInicial={abrirRelatorio} />
       <SecaoFrequencia alunoId={aluno.id} />
+      <SecaoPontuacao alunoId={aluno.id} />
       <SecaoMensalidades alunoId={aluno.id} />
 
       <Link

@@ -11,7 +11,14 @@ import { TurmaFormPage } from "./pages/admin/TurmaForm";
 import { TreinosListPage } from "./pages/admin/TreinosList";
 import { TreinoFormPage } from "./pages/admin/TreinoForm";
 import { ChamadaPage } from "./pages/admin/Chamada";
+import { RankingPage } from "./pages/admin/Ranking";
+import { RelatoriosStatusPage } from "./pages/admin/RelatoriosStatus";
 import { AlunoHomePage } from "./pages/aluno/Home";
+import { AlunoRankingPage } from "./pages/aluno/Ranking";
+import { AlunoEvolucaoPage } from "./pages/aluno/Evolucao";
+import { AlunoCalendarioPage } from "./pages/aluno/Calendario";
+import { AlunoRelatoriosPage } from "./pages/aluno/Relatorios";
+import { AlunoPerfilPage } from "./pages/aluno/Perfil";
 
 export default function App() {
   return (
@@ -34,12 +41,20 @@ export default function App() {
           <Route path="/admin/treinos/novo" element={<TreinoFormPage />} />
           <Route path="/admin/treinos/:id/editar" element={<TreinoFormPage />} />
           <Route path="/admin/treinos/:id/chamada" element={<ChamadaPage />} />
+
+          <Route path="/admin/ranking" element={<RankingPage />} />
+          <Route path="/admin/relatorios" element={<RelatoriosStatusPage />} />
         </Route>
       </Route>
 
       <Route element={<ProtectedRoute allowedRoles={["aluno"]} />}>
         <Route element={<Layout />}>
           <Route path="/aluno" element={<AlunoHomePage />} />
+          <Route path="/aluno/ranking" element={<AlunoRankingPage />} />
+          <Route path="/aluno/evolucao" element={<AlunoEvolucaoPage />} />
+          <Route path="/aluno/calendario" element={<AlunoCalendarioPage />} />
+          <Route path="/aluno/relatorios" element={<AlunoRelatoriosPage />} />
+          <Route path="/aluno/perfil" element={<AlunoPerfilPage />} />
         </Route>
       </Route>
 

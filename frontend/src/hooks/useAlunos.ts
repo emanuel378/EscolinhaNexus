@@ -44,6 +44,44 @@ export function useAlterarStatusAluno() {
   });
 }
 
+export function useMeuProximoTreino() {
+  return useQuery({
+    queryKey: ["treinos", "proximo", "meu"],
+    queryFn: alunoService.meuProximoTreino,
+  });
+}
+
+export function useMeuCalendario(mes: string) {
+  return useQuery({
+    queryKey: ["calendario", "meu", mes],
+    queryFn: () => alunoService.meuCalendario(mes),
+    enabled: !!mes,
+  });
+}
+
+export function useMeuHistoricoMensal() {
+  return useQuery({
+    queryKey: ["historico-mensal", "meu"],
+    queryFn: alunoService.meuHistoricoMensal,
+  });
+}
+
+export function useUploadFotoAluno(id: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (arquivo: File) => alunoService.uploadFotoAluno(id, arquivo),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ALUNOS_KEY }),
+  });
+}
+
+export function useRemoverFotoAluno(id: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: () => alunoService.removerFotoAluno(id),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ALUNOS_KEY }),
+  });
+}
+
 export function useRemoverAluno() {
   const queryClient = useQueryClient();
   return useMutation({

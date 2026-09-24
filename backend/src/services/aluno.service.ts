@@ -1,6 +1,14 @@
 import { supabaseAdmin } from "../lib/supabase";
 import { AppError } from "../middlewares/errorHandler";
 
+const FOTO_BUCKET = "fotos-alunos";
+
+const EXTENSOES_PERMITIDAS: Record<string, string> = {
+  "image/jpeg": "jpg",
+  "image/png": "png",
+  "image/webp": "webp",
+};
+
 type StatusAluno = "ativo" | "inativo";
 
 interface CriarAlunoInput {
@@ -19,6 +27,7 @@ interface AtualizarAlunoInput {
   email?: string;
   dataNascimento?: Date;
   telefone?: string;
+  dataEntrada?: Date;
   turmaId?: string | null;
   fotoUrl?: string;
   status?: StatusAluno;
@@ -225,6 +234,7 @@ export async function atualizarAluno(id: string, input: AtualizarAlunoInput) {
     .update({
       ...(input.dataNascimento ? { data_nascimento: input.dataNascimento } : {}),
       ...(input.telefone !== undefined ? { telefone: input.telefone } : {}),
+      ...(input.dataEntrada ? { data_entrada: input.dataEntrada } : {}),
       ...(input.turmaId !== undefined ? { turma_id: input.turmaId } : {}),
       ...(input.fotoUrl !== undefined ? { foto_url: input.fotoUrl } : {}),
       ...(input.status ? { status: input.status } : {}),
@@ -245,6 +255,57 @@ export async function alterarStatusAluno(id: string, status: StatusAluno) {
   if (error) {
     throw new AppError(`Erro ao alterar status do aluno: ${error.message}`, 500);
   }
+
+  return buscarAlunoPorId(id);
+}
+
+export async function uploadFotoAluno(id: string, arquivo: { buffer: Buffer; mimetype: string }) {
+  const extensao = EXTENSOES_PERMITIDAS[arquivo.mimetype];
+  if (!extensao) {
+    throw new AppError("Formato de imagem não suportado. Use JPEG, PNG ou WEBP.", 400);
+  }
+
+  await buscarAlunoPorId(id);
+
+  const caminho = `${id}.${extensao}`;
+
+  const { error: uploadError } = await supabaseAdmin.storage
+    .from(FOTO_BUCKET)
+    .upload(caminho, arquivo.buffer, { contentType: arquivo.mimetype, upsert: true });
+
+  if (uploadError) {
+    throw new AppError(`Erro ao enviar a foto: ${uploadError.message}`, 500);
+  }
+
+  const { data: publicUrlData } = supabaseAdmin.storage.from(FOTO_BUCKET).getPublicUrl(caminho);
+  // O caminho é fixo (mesmo id do aluno) para não acumular arquivo órfão a
+  // cada troca de foto — por isso o "?v=" para invalidar cache do navegador.
+  const fotoUrl = `${publicUrlData.publicUrl}?v=${Date.now()}`;
+
+  const { error: updateError } = await supabaseAdmin
+    .from("alunos")
+    .update({ foto_url: fotoUrl })
+    .eq("id", id);
+
+  if (updateError) {
+    throw new AppError(`Erro ao salvar a foto do aluno: ${updateError.message}`, 500);
+  }
+
+  return buscarAlunoPorId(id);
+}
+
+export async function removerFotoAluno(id: string) {
+  const aluno = await buscarAlunoPorId(id);
+
+  if (aluno.fotoUrl) {
+    const nomeArquivo = aluno.fotoUrl.split("/").pop()?.split("?")[0];
+    if (nomeArquivo) {
+      await supabaseAdmin.storage.from(FOTO_BUCKET).remove([nomeArquivo]);
+    }
+  }
+
+  const { error } = await supabaseAdmin.from("alunos").update({ foto_url: null }).eq("id", id);
+  if (error) throw new AppError(`Erro ao remover a foto do aluno: ${error.message}`, 500);
 
   return buscarAlunoPorId(id);
 }

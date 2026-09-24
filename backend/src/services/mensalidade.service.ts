@@ -35,7 +35,26 @@ function paraApi(row: MensalidadeRow) {
   };
 }
 
+// Não há cron/scheduler neste projeto, então o status "atrasado" não surge
+// sozinho com o tempo — cada leitura relevante varre e corrige antes de
+// responder qualquer mensalidade "pendente" cujo vencimento já passou.
+export async function marcarAtrasadas() {
+  const hoje = new Date().toISOString().substring(0, 10);
+
+  const { error } = await supabaseAdmin
+    .from("mensalidades")
+    .update({ status: "atrasado" })
+    .eq("status", "pendente")
+    .lt("vencimento", hoje);
+
+  if (error) {
+    throw new AppError(`Erro ao atualizar mensalidades atrasadas: ${error.message}`, 500);
+  }
+}
+
 export async function listarMensalidadesDoAluno(alunoId: string) {
+  await marcarAtrasadas();
+
   const { data, error } = await supabaseAdmin
     .from("mensalidades")
     .select("*")
@@ -108,6 +127,8 @@ export async function removerMensalidade(id: string) {
 }
 
 export async function contarPendentes() {
+  await marcarAtrasadas();
+
   const { count, error } = await supabaseAdmin
     .from("mensalidades")
     .select("id", { count: "exact", head: true })

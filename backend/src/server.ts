@@ -6,6 +6,10 @@ import alunoRoutes from "./routes/aluno.routes";
 import turmaRoutes from "./routes/turma.routes";
 import treinoRoutes from "./routes/treino.routes";
 import mensalidadeRoutes from "./routes/mensalidade.routes";
+import pontuacaoRoutes from "./routes/pontuacao.routes";
+import relatorioRoutes from "./routes/relatorio.routes";
+import rankingRoutes from "./routes/ranking.routes";
+import dashboardRoutes from "./routes/dashboard.routes";
 
 const app = express();
 
@@ -23,6 +27,10 @@ app.use("/alunos", alunoRoutes);
 app.use("/turmas", turmaRoutes);
 app.use("/treinos", treinoRoutes);
 app.use("/mensalidades", mensalidadeRoutes);
+app.use("/pontuacoes", pontuacaoRoutes);
+app.use("/relatorios", relatorioRoutes);
+app.use("/ranking", rankingRoutes);
+app.use("/dashboard", dashboardRoutes);
 
 app.use(errorHandler);
 

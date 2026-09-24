@@ -6,6 +6,17 @@ const NAV_ADMIN = [
   { to: "/admin/alunos", label: "Alunos" },
   { to: "/admin/turmas", label: "Turmas" },
   { to: "/admin/treinos", label: "Treinos" },
+  { to: "/admin/ranking", label: "Ranking" },
+  { to: "/admin/relatorios", label: "Relatórios" },
+];
+
+const NAV_ALUNO = [
+  { to: "/aluno", label: "Início", end: true },
+  { to: "/aluno/ranking", label: "Ranking" },
+  { to: "/aluno/evolucao", label: "Evolução" },
+  { to: "/aluno/calendario", label: "Calendário" },
+  { to: "/aluno/relatorios", label: "Relatórios" },
+  { to: "/aluno/perfil", label: "Perfil" },
 ];
 
 export function Layout() {
@@ -50,9 +61,9 @@ export function Layout() {
             </button>
           </div>
         </div>
-        {usuario?.role === "admin" && (
+        {usuario && (
           <nav className="mx-auto flex max-w-5xl gap-1 overflow-x-auto px-4 pb-2 sm:px-6">
-            {NAV_ADMIN.map((item) => (
+            {(usuario.role === "admin" ? NAV_ADMIN : NAV_ALUNO).map((item) => (
               <NavLink
                 key={item.to}
                 to={item.to}

@@ -96,20 +96,91 @@ create table if not exists pontuacoes (
   data timestamptz not null default now()
 );
 
+-- Vincula um lançamento de pontuação à frequência que o gerou (presença =
+-- +5 pontos automáticos). Nulo para lançamentos manuais do admin. O índice
+-- único garante no máximo um lançamento automático por frequência (evita
+-- duplicar pontos ao salvar a mesma chamada mais de uma vez).
+alter table pontuacoes add column if not exists frequencia_id uuid references frequencias (id) on delete cascade;
+create unique index if not exists pontuacoes_frequencia_id_key on pontuacoes (frequencia_id);
+
+-- Migração retroativa: alunos que já tinham presença marcada antes desta
+-- automação existir também ganham os pontos, para o ranking não ficar
+-- inconsistente entre presenças antigas e novas.
+insert into pontuacoes (aluno_id, frequencia_id, pontos, motivo)
+select f.aluno_id, f.id, 5, 'Presença no treino'
+from frequencias f
+where f.status = 'presente'
+  and not exists (select 1 from pontuacoes p where p.frequencia_id = f.id)
+on conflict (frequencia_id) do nothing;
+
+-- Relatório mensal: uma nota (0-10) por subitem de cada uma das 4 categorias
+-- sugeridas no briefing, em vez de uma nota macro única por categoria.
 create table if not exists relatorios (
   id uuid primary key default gen_random_uuid(),
   aluno_id uuid not null references alunos (id) on delete cascade,
   mes_referencia text not null,
-  nota_tecnico int not null,
-  nota_fisico int not null,
-  nota_tatico int not null,
-  nota_mental int not null,
+  -- Técnico
+  tec_controle_bola int not null default 5,
+  tec_levantamento int not null default 5,
+  tec_ataque int not null default 5,
+  tec_saque int not null default 5,
+  tec_recepcao int not null default 5,
+  tec_defesa int not null default 5,
+  tec_virada_bola int not null default 5,
+  -- Físico
+  fis_resistencia int not null default 5,
+  fis_velocidade int not null default 5,
+  fis_agilidade int not null default 5,
+  fis_condicionamento int not null default 5,
+  fis_intensidade int not null default 5,
+  -- Tático
+  tat_posicionamento int not null default 5,
+  tat_tomada_decisao int not null default 5,
+  tat_leitura_jogo int not null default 5,
+  tat_estrategia int not null default 5,
+  -- Mental / Comportamental
+  men_comprometimento int not null default 5,
+  men_concentracao int not null default 5,
+  men_disciplina int not null default 5,
+  men_confianca int not null default 5,
+  men_trabalho_equipe int not null default 5,
   pontos_fortes text not null,
   pontos_melhorar text not null,
   objetivo_proximo_mes text not null,
   criado_em timestamptz not null default now(),
   unique (aluno_id, mes_referencia)
 );
+
+-- Migração idempotente para quem já rodou uma versão antiga deste schema
+-- (com as 4 notas macro nota_tecnico/nota_fisico/nota_tatico/nota_mental):
+-- troca pelos 21 subitens acima. Roda sem erro tanto num banco novo (colunas
+-- já existem, "if not exists"/"if exists" só ignoram) quanto num existente.
+alter table relatorios drop column if exists nota_tecnico;
+alter table relatorios drop column if exists nota_fisico;
+alter table relatorios drop column if exists nota_tatico;
+alter table relatorios drop column if exists nota_mental;
+
+alter table relatorios add column if not exists tec_controle_bola int not null default 5;
+alter table relatorios add column if not exists tec_levantamento int not null default 5;
+alter table relatorios add column if not exists tec_ataque int not null default 5;
+alter table relatorios add column if not exists tec_saque int not null default 5;
+alter table relatorios add column if not exists tec_recepcao int not null default 5;
+alter table relatorios add column if not exists tec_defesa int not null default 5;
+alter table relatorios add column if not exists tec_virada_bola int not null default 5;
+alter table relatorios add column if not exists fis_resistencia int not null default 5;
+alter table relatorios add column if not exists fis_velocidade int not null default 5;
+alter table relatorios add column if not exists fis_agilidade int not null default 5;
+alter table relatorios add column if not exists fis_condicionamento int not null default 5;
+alter table relatorios add column if not exists fis_intensidade int not null default 5;
+alter table relatorios add column if not exists tat_posicionamento int not null default 5;
+alter table relatorios add column if not exists tat_tomada_decisao int not null default 5;
+alter table relatorios add column if not exists tat_leitura_jogo int not null default 5;
+alter table relatorios add column if not exists tat_estrategia int not null default 5;
+alter table relatorios add column if not exists men_comprometimento int not null default 5;
+alter table relatorios add column if not exists men_concentracao int not null default 5;
+alter table relatorios add column if not exists men_disciplina int not null default 5;
+alter table relatorios add column if not exists men_confianca int not null default 5;
+alter table relatorios add column if not exists men_trabalho_equipe int not null default 5;
 
 create or replace function set_atualizado_em()
 returns trigger as $$
@@ -137,3 +208,11 @@ alter table frequencias enable row level security;
 alter table mensalidades enable row level security;
 alter table pontuacoes enable row level security;
 alter table relatorios enable row level security;
+
+-- Bucket de Storage para as fotos de perfil dos alunos. Público (a imagem é
+-- servida direto por URL, sem token de acesso) — só o backend, com a
+-- service_role key, grava nele; não há dado sensível na foto em si para
+-- justificar deixá-lo privado.
+insert into storage.buckets (id, name, public)
+values ('fotos-alunos', 'fotos-alunos', true)
+on conflict (id) do nothing;

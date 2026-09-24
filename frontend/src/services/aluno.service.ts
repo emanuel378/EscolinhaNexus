@@ -1,5 +1,13 @@
 import { api } from "./api";
-import { Aluno, AtualizarAlunoInput, CriarAlunoInput, StatusAluno } from "../types";
+import {
+  Aluno,
+  AtualizarAlunoInput,
+  CalendarioMensal,
+  CriarAlunoInput,
+  HistoricoMensalItem,
+  StatusAluno,
+  Treino,
+} from "../types";
 
 export async function listarAlunos(status?: StatusAluno): Promise<Aluno[]> {
   const { data } = await api.get<Aluno[]>("/alunos", { params: { status } });
@@ -33,4 +41,31 @@ export async function alterarStatusAluno(id: string, status: StatusAluno): Promi
 
 export async function removerAluno(id: string): Promise<void> {
   await api.delete(`/alunos/${id}`);
+}
+
+export async function meuProximoTreino(): Promise<Treino | null> {
+  const { data } = await api.get<Treino | null>("/alunos/me/proximo-treino");
+  return data;
+}
+
+export async function meuCalendario(mes: string): Promise<CalendarioMensal> {
+  const { data } = await api.get<CalendarioMensal>("/alunos/me/calendario", { params: { mes } });
+  return data;
+}
+
+export async function meuHistoricoMensal(): Promise<HistoricoMensalItem[]> {
+  const { data } = await api.get<HistoricoMensalItem[]>("/alunos/me/historico-mensal");
+  return data;
+}
+
+export async function uploadFotoAluno(id: string, arquivo: File): Promise<Aluno> {
+  const formData = new FormData();
+  formData.append("foto", arquivo);
+  const { data } = await api.post<Aluno>(`/alunos/${id}/foto`, formData);
+  return data;
+}
+
+export async function removerFotoAluno(id: string): Promise<Aluno> {
+  const { data } = await api.delete<Aluno>(`/alunos/${id}/foto`);
+  return data;
 }

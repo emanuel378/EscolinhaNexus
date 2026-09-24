@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import { useAlterarStatusAluno, useAlunos, useRemoverAluno } from "../../hooks/useAlunos";
 import { StatusBadge } from "../../components/StatusBadge";
+import { Avatar } from "../../components/Avatar";
 import { Spinner } from "../../components/Spinner";
 import { StatusAluno } from "../../types";
 
@@ -65,7 +66,7 @@ export function AlunosListPage() {
 
       {alunos && alunos.length > 0 && (
         <div className="overflow-x-auto rounded-xl border border-white/10 bg-nexus-surface">
-          <table className="w-full min-w-[640px] text-left text-sm">
+          <table className="w-full min-w-[720px] text-left text-sm">
             <thead className="bg-white/5 text-slate-400">
               <tr>
                 <th className="px-4 py-3 font-medium">Nome</th>
@@ -78,13 +79,18 @@ export function AlunosListPage() {
               {alunos.map((aluno) => (
                 <tr key={aluno.id} className="border-t border-white/5">
                   <td className="px-4 py-3">
-                    <Link
-                      to={`/admin/alunos/${aluno.id}`}
-                      className="font-medium text-white hover:text-nexus-highlight hover:underline"
-                    >
-                      {aluno.usuario.nome}
-                    </Link>
-                    <div className="text-xs text-slate-500">{aluno.usuario.email}</div>
+                    <div className="flex items-center gap-3">
+                      <Avatar nome={aluno.usuario.nome} fotoUrl={aluno.fotoUrl} tamanho="sm" />
+                      <div>
+                        <Link
+                          to={`/admin/alunos/${aluno.id}`}
+                          className="font-medium text-white hover:text-nexus-highlight hover:underline"
+                        >
+                          {aluno.usuario.nome}
+                        </Link>
+                        <div className="text-xs text-slate-500">{aluno.usuario.email}</div>
+                      </div>
+                    </div>
                   </td>
                   <td className="px-4 py-3 text-slate-400">{aluno.turma?.nome ?? "—"}</td>
                   <td className="px-4 py-3">

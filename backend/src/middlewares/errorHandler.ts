@@ -1,5 +1,6 @@
 import { NextFunction, Request, Response } from "express";
 import { ZodError } from "zod";
+import { MulterError } from "multer";
 
 export class AppError extends Error {
   constructor(
@@ -28,6 +29,12 @@ export function errorHandler(
 
   if (err instanceof AppError) {
     return res.status(err.statusCode).json({ message: err.message });
+  }
+
+  if (err instanceof MulterError) {
+    const mensagem =
+      err.code === "LIMIT_FILE_SIZE" ? "A imagem deve ter no máximo 5MB." : err.message;
+    return res.status(400).json({ message: mensagem });
   }
 
   console.error(err);

@@ -2,8 +2,9 @@ import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { useFichaDeChamada, useMarcarFrequencias } from "../../hooks/useFrequencia";
 import { useTreino } from "../../hooks/useTreinos";
-import { Spinner } from "../../components/Spinner";
 import { StatusFrequencia } from "../../types";
+import { Avatar } from "../../components/Avatar";
+import { Spinner } from "../../components/Spinner";
 
 const OPCOES: { valor: StatusFrequencia; rotulo: string }[] = [
   { valor: "presente", rotulo: "Presente" },
@@ -82,7 +83,10 @@ export function ChamadaPage() {
               key={item.alunoId}
               className="flex flex-col gap-2 border-b border-white/5 py-3 last:border-0 sm:flex-row sm:items-center sm:justify-between"
             >
-              <span className="text-sm font-medium text-white">{item.nome}</span>
+              <div className="flex items-center gap-3">
+                <Avatar nome={item.nome} fotoUrl={item.fotoUrl} tamanho="sm" />
+                <span className="text-sm font-medium text-white">{item.nome}</span>
+              </div>
               <div className="flex gap-1">
                 {OPCOES.map((opcao) => (
                   <button

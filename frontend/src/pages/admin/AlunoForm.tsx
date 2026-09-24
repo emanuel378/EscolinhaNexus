@@ -7,6 +7,10 @@ const inputClass =
   "w-full rounded-lg border border-white/10 bg-nexus-bg/60 px-3 py-2 text-sm text-white placeholder-slate-500 outline-none transition focus:border-nexus-primary focus:ring-2 focus:ring-nexus-primary/40";
 const labelClass = "mb-1 block text-sm font-medium text-slate-300";
 
+function hojeISO() {
+  return new Date().toISOString().substring(0, 10);
+}
+
 export function AlunoFormPage() {
   const { id } = useParams<{ id: string }>();
   const modoEdicao = !!id;
@@ -22,6 +26,7 @@ export function AlunoFormPage() {
   const [senha, setSenha] = useState("");
   const [dataNascimento, setDataNascimento] = useState("");
   const [telefone, setTelefone] = useState("");
+  const [dataEntrada, setDataEntrada] = useState(hojeISO());
   const [turmaId, setTurmaId] = useState("");
   const [erro, setErro] = useState<string | null>(null);
 
@@ -31,6 +36,7 @@ export function AlunoFormPage() {
       setEmail(alunoExistente.usuario.email);
       setDataNascimento(alunoExistente.dataNascimento.substring(0, 10));
       setTelefone(alunoExistente.telefone ?? "");
+      setDataEntrada(alunoExistente.dataEntrada.substring(0, 10));
       setTurmaId(alunoExistente.turmaId ?? "");
     }
   }, [alunoExistente]);
@@ -46,6 +52,7 @@ export function AlunoFormPage() {
           email,
           dataNascimento,
           telefone: telefone || undefined,
+          dataEntrada: dataEntrada || undefined,
           turmaId: turmaId || null,
         });
       } else {
@@ -55,6 +62,7 @@ export function AlunoFormPage() {
           senha,
           dataNascimento,
           telefone: telefone || undefined,
+          dataEntrada: dataEntrada || undefined,
           turmaId: turmaId || undefined,
         });
       }
@@ -125,6 +133,17 @@ export function AlunoFormPage() {
             onChange={(e) => setTelefone(e.target.value)}
             className={inputClass}
             placeholder="(00) 00000-0000"
+          />
+        </div>
+
+        <div>
+          <label className={labelClass}>Data de entrada na escolinha</label>
+          <input
+            type="date"
+            required
+            value={dataEntrada}
+            onChange={(e) => setDataEntrada(e.target.value)}
+            className={inputClass}
           />
         </div>
 

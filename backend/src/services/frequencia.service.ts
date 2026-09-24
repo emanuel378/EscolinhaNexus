@@ -11,6 +11,7 @@ interface RegistroInput {
 
 interface AlunoDaTurmaRow {
   id: string;
+  foto_url: string | null;
   usuarios: { nome: string } | null;
 }
 
@@ -26,7 +27,7 @@ export async function listarFichaDeChamada(treinoId: string) {
 
   const { data: alunos, error: alunosError } = await supabaseAdmin
     .from("alunos")
-    .select("id, usuarios ( nome )")
+    .select("id, foto_url, usuarios ( nome )")
     .eq("turma_id", treino.turmaId)
     .eq("status", "ativo")
     .returns<AlunoDaTurmaRow[]>();
@@ -51,9 +52,58 @@ export async function listarFichaDeChamada(treinoId: string) {
     .map((aluno) => ({
       alunoId: aluno.id,
       nome: aluno.usuarios?.nome ?? "—",
+      fotoUrl: aluno.foto_url,
       status: statusPorAluno.get(aluno.id) ?? null,
     }))
     .sort((a, b) => a.nome.localeCompare(b.nome, "pt-BR"));
+}
+
+const PONTOS_POR_PRESENCA = 5;
+
+interface FrequenciaAtualizadaRow {
+  id: string;
+  aluno_id: string;
+  status: StatusFrequencia;
+}
+
+// Mantém a pontuação em sincronia com a presença: toda vez que um registro
+// vira "presente" ganha +5 pontos automáticos (vinculados a essa frequência
+// específica via frequencia_id); se deixar de ser "presente", o ponto
+// automático correspondente é removido. Usa upsert com ignoreDuplicates
+// para não duplicar pontos ao salvar a mesma chamada de novo.
+async function sincronizarPontosDePresenca(frequencias: FrequenciaAtualizadaRow[]) {
+  const presentes = frequencias.filter((f) => f.status === "presente");
+  const naoPresentes = frequencias.filter((f) => f.status !== "presente");
+
+  if (naoPresentes.length > 0) {
+    const { error } = await supabaseAdmin
+      .from("pontuacoes")
+      .delete()
+      .in(
+        "frequencia_id",
+        naoPresentes.map((f) => f.id)
+      );
+
+    if (error) {
+      throw new AppError(`Erro ao ajustar pontos de presença: ${error.message}`, 500);
+    }
+  }
+
+  if (presentes.length > 0) {
+    const { error } = await supabaseAdmin.from("pontuacoes").upsert(
+      presentes.map((f) => ({
+        aluno_id: f.aluno_id,
+        frequencia_id: f.id,
+        pontos: PONTOS_POR_PRESENCA,
+        motivo: "Presença no treino",
+      })),
+      { onConflict: "frequencia_id", ignoreDuplicates: true }
+    );
+
+    if (error) {
+      throw new AppError(`Erro ao lançar pontos de presença: ${error.message}`, 500);
+    }
+  }
 }
 
 export async function marcarFrequencias(treinoId: string, registros: RegistroInput[]) {
@@ -61,18 +111,24 @@ export async function marcarFrequencias(treinoId: string, registros: RegistroInp
 
   if (registros.length === 0) return;
 
-  const { error } = await supabaseAdmin.from("frequencias").upsert(
-    registros.map((r) => ({
-      treino_id: treinoId,
-      aluno_id: r.alunoId,
-      status: r.status,
-    })),
-    { onConflict: "aluno_id,treino_id" }
-  );
+  const { data: frequencias, error } = await supabaseAdmin
+    .from("frequencias")
+    .upsert(
+      registros.map((r) => ({
+        treino_id: treinoId,
+        aluno_id: r.alunoId,
+        status: r.status,
+      })),
+      { onConflict: "aluno_id,treino_id" }
+    )
+    .select("id, aluno_id, status")
+    .returns<FrequenciaAtualizadaRow[]>();
 
   if (error) {
     throw new AppError(`Erro ao marcar frequências: ${error.message}`, 500);
   }
+
+  await sincronizarPontosDePresenca(frequencias);
 }
 
 interface HistoricoRow {
@@ -131,4 +187,78 @@ export async function listarHistoricoFrequencia(alunoId: string) {
     faltasJustificadas: historico.filter((h) => h.status === "falta_justificada").length,
     historico,
   };
+}
+
+interface TreinoDoMesRow {
+  id: string;
+  data: string;
+  hora_inicio: string;
+  hora_fim: string;
+  tipo: string;
+  local: string;
+}
+
+interface FrequenciaPorTreinoRow {
+  treino_id: string;
+  status: StatusFrequencia;
+}
+
+// Calendário mensal do aluno: todo treino da turma dele no mês, com o
+// status de presença já marcado (ou null, se o treino ainda não teve
+// chamada feita ou é futuro).
+export async function listarCalendarioMensal(
+  alunoId: string,
+  turmaId: string | null,
+  mesReferencia: string
+) {
+  if (!turmaId) return { mesReferencia, dias: [] };
+
+  const [ano, mes] = mesReferencia.split("-").map(Number);
+  if (!ano || !mes || mes < 1 || mes > 12) {
+    throw new AppError("mesReferencia inválido. Use o formato YYYY-MM.", 400);
+  }
+  const inicio = new Date(Date.UTC(ano, mes - 1, 1)).toISOString().substring(0, 10);
+  const fim = new Date(Date.UTC(ano, mes, 1)).toISOString().substring(0, 10);
+
+  const { data: treinos, error: treinosError } = await supabaseAdmin
+    .from("treinos")
+    .select("id, data, hora_inicio, hora_fim, tipo, local")
+    .eq("turma_id", turmaId)
+    .gte("data", inicio)
+    .lt("data", fim)
+    .order("data", { ascending: true })
+    .returns<TreinoDoMesRow[]>();
+
+  if (treinosError) {
+    throw new AppError(`Erro ao listar treinos do mês: ${treinosError.message}`, 500);
+  }
+
+  const treinoIds = treinos.map((t) => t.id);
+  let frequencias: FrequenciaPorTreinoRow[] = [];
+
+  if (treinoIds.length > 0) {
+    const { data, error } = await supabaseAdmin
+      .from("frequencias")
+      .select("treino_id, status")
+      .eq("aluno_id", alunoId)
+      .in("treino_id", treinoIds)
+      .returns<FrequenciaPorTreinoRow[]>();
+
+    if (error) throw new AppError(`Erro ao listar frequências do mês: ${error.message}`, 500);
+    frequencias = data;
+  }
+
+  const statusPorTreino = new Map(frequencias.map((f) => [f.treino_id, f.status]));
+
+  const dias = treinos.map((t) => ({
+    treinoId: t.id,
+    data: t.data,
+    horaInicio: t.hora_inicio,
+    horaFim: t.hora_fim,
+    tipo: t.tipo,
+    local: t.local,
+    status: statusPorTreino.get(t.id) ?? null,
+  }));
+
+  return { mesReferencia, dias };
 }
