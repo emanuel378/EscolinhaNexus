@@ -80,7 +80,7 @@ export function Layout() {
                 Nexus <span className="text-white">Vôlei</span>
               </p>
               {tituloPagina ? (
-                <p className="font-display text-lg font-bold leading-none text-white sm:hidden">
+                <p className="font-display text-lg font-bold leading-none text-white">
                   {tituloPagina}
                 </p>
               ) : (
@@ -107,12 +107,8 @@ export function Layout() {
             )}
           </div>
         </div>
-        {usuario && (
-          <nav
-            className={`mx-auto max-w-5xl gap-1 overflow-x-auto px-4 pb-2 sm:px-6 ${
-              ehAluno ? "hidden sm:flex" : "flex"
-            }`}
-          >
+        {usuario && !ehAluno && (
+          <nav className="mx-auto flex max-w-5xl gap-1 overflow-x-auto px-4 pb-2 sm:px-6">
             {nav.map((item) => (
               <NavLink
                 key={item.to}
@@ -136,15 +132,15 @@ export function Layout() {
 
       <main
         className={`relative z-10 mx-auto max-w-5xl px-4 py-6 sm:px-6 sm:py-8 ${
-          ehAluno ? "pb-28 sm:pb-8" : ""
+          ehAluno ? "pb-28" : ""
         }`}
       >
         <Outlet />
       </main>
 
       {ehAluno && (
-        <nav className="fixed inset-x-0 bottom-0 z-30 border-t border-white/10 bg-nexus-surface/95 pb-[env(safe-area-inset-bottom)] backdrop-blur sm:hidden">
-          <div className="grid grid-cols-5">
+        <nav className="fixed inset-x-0 bottom-0 z-30 border-t border-white/10 bg-nexus-surface/95 pb-[env(safe-area-inset-bottom)] backdrop-blur">
+          <div className="mx-auto grid max-w-xl grid-cols-5">
             {NAV_ALUNO.map((item) => (
               <NavLink
                 key={item.to}

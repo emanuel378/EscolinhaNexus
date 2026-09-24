@@ -278,7 +278,7 @@ export function AlunoRankingPage() {
 
       {/* Objetivo fixo acima da barra inferior */}
       {eu && mes === mesAtual() && (
-        <div className="sticky bottom-20 z-20 sm:bottom-4">
+        <div className="sticky bottom-20 z-20">
           <div className="flex items-center gap-3 rounded-2xl border border-nexus-primary/30 bg-nexus-bg/95 p-3 shadow-2xl backdrop-blur">
             <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-nexus-gold text-nexus-bg">
               <IconFlame className="h-5 w-5" />
