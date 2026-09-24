@@ -6,6 +6,11 @@ export async function listarMensalidadesDoAluno(alunoId: string): Promise<Mensal
   return data;
 }
 
+export async function minhasMensalidades(): Promise<Mensalidade[]> {
+  const { data } = await api.get<Mensalidade[]>("/alunos/me/mensalidades");
+  return data;
+}
+
 export async function criarMensalidade(
   alunoId: string,
   input: CriarMensalidadeInput

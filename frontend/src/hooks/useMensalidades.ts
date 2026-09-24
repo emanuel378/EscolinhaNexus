@@ -55,3 +55,10 @@ export function useMensalidadesPendentes() {
     queryFn: mensalidadeService.contarMensalidadesPendentes,
   });
 }
+
+export function useMinhasMensalidades() {
+  return useQuery({
+    queryKey: ["mensalidades", "minhas"],
+    queryFn: mensalidadeService.minhasMensalidades,
+  });
+}

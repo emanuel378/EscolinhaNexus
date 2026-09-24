@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from "express";
 import { z } from "zod";
 import * as mensalidadeService from "../services/mensalidade.service";
+import { buscarAlunoPorUsuarioId } from "../services/aluno.service";
 
 const criarMensalidadeSchema = z.object({
   mesReferencia: z.string().regex(/^\d{4}-\d{2}$/, "Use o formato YYYY-MM."),
@@ -20,6 +21,16 @@ const atualizarMensalidadeSchema = z.object({
 export async function listarMensalidadesController(req: Request, res: Response, next: NextFunction) {
   try {
     const mensalidades = await mensalidadeService.listarMensalidadesDoAluno(req.params.id);
+    return res.status(200).json(mensalidades);
+  } catch (err) {
+    return next(err);
+  }
+}
+
+export async function minhasMensalidadesController(req: Request, res: Response, next: NextFunction) {
+  try {
+    const aluno = await buscarAlunoPorUsuarioId(req.auth!.sub);
+    const mensalidades = await mensalidadeService.listarMensalidadesDoAluno(aluno.id);
     return res.status(200).json(mensalidades);
   } catch (err) {
     return next(err);

@@ -228,6 +228,9 @@ export interface RankingItem {
   fotoUrl: string | null;
   turma: string | null;
   pontos: number;
+  pontosSemana: number;
+  presencas: number;
+  frequenciaPercentual: number | null;
   posicao: number;
 }
 
