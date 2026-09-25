@@ -37,3 +37,5 @@ app.use(errorHandler);
 app.listen(env.port, () => {
   console.log(`Servidor rodando em http://localhost:${env.port}`);
 });
+
+export default app;
