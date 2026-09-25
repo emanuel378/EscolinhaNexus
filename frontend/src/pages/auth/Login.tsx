@@ -28,16 +28,16 @@ export function LoginPage() {
   return (
     <div className="relative min-h-screen w-full overflow-hidden bg-nexus-bg">
       <div
-        className="absolute inset-0 bg-cover bg-center sm:bg-fixed"
-        style={{ backgroundImage: "url(/images/login-bg.png)" }}
+        className="absolute inset-0 bg-cover bg-center"
+        style={{ backgroundImage: "url(/images/login-bg.webp)" }}
         aria-hidden="true"
       />
       <div
-        className="absolute inset-0 bg-gradient-to-t from-nexus-bg via-nexus-bg/80 to-nexus-bg/40 lg:bg-gradient-to-r lg:from-nexus-bg/95 lg:via-nexus-bg/60 lg:to-nexus-bg/20"
+        className="absolute inset-0 bg-gradient-to-t from-nexus-bg/90 via-nexus-bg/20 to-transparent lg:bg-gradient-to-l lg:from-nexus-bg/80 lg:via-transparent lg:to-transparent"
         aria-hidden="true"
       />
 
-      <div className="relative z-10 flex min-h-screen w-full flex-col items-center justify-center px-4 py-12 sm:px-6 lg:flex-row lg:justify-end lg:px-16 xl:px-24">
+      <div className="relative z-10 flex min-h-screen w-full flex-col items-center justify-end px-4 pb-10 pt-[45vh] sm:px-6 lg:flex-row lg:justify-end lg:px-16 lg:py-12 xl:px-24">
         <div className="w-full max-w-sm rounded-2xl border border-nexus-primary/20 bg-nexus-surface/85 p-6 shadow-nexus-glow backdrop-blur-md sm:p-8">
           <div className="mb-6">
             <img
