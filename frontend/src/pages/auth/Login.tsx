@@ -33,11 +33,11 @@ export function LoginPage() {
         aria-hidden="true"
       />
       <div
-        className="absolute inset-0 bg-gradient-to-t from-nexus-bg/90 via-nexus-bg/20 to-transparent lg:bg-gradient-to-l lg:from-nexus-bg/80 lg:via-transparent lg:to-transparent"
+        className="absolute inset-0 bg-gradient-to-t from-nexus-bg/90 via-nexus-bg/20 to-transparent"
         aria-hidden="true"
       />
 
-      <div className="relative z-10 flex min-h-screen w-full flex-col items-center justify-end px-4 pb-10 pt-[45vh] sm:px-6 lg:flex-row lg:justify-end lg:px-16 lg:py-12 xl:px-24">
+      <div className="relative z-10 flex min-h-screen w-full flex-col items-center px-4 pb-10 pt-[42vh] sm:px-6">
         <div className="w-full max-w-sm rounded-2xl border border-nexus-primary/20 bg-nexus-surface/85 p-6 shadow-nexus-glow backdrop-blur-md sm:p-8">
           <div className="mb-6">
             <img
