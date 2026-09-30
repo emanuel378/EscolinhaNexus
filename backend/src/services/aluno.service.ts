@@ -83,6 +83,12 @@ function paraApi(row: AlunoRow) {
   };
 }
 
+// Email é comparado sem diferenciar maiúsculas (o Supabase Auth guarda em
+// minúsculas); escapa os curingas do ILIKE para a comparação ser exata.
+function escaparLike(valor: string) {
+  return valor.replace(/[\\%_]/g, "\\$&");
+}
+
 export async function listarAlunos(filtro?: { status?: StatusAluno }) {
   let query = supabaseAdmin.from("alunos").select(SELECT_ALUNO);
 
@@ -139,7 +145,7 @@ export async function criarAluno(input: CriarAlunoInput) {
   const { data: usuarioExistente } = await supabaseAdmin
     .from("usuarios")
     .select("id")
-    .eq("email", input.email)
+    .ilike("email", escaparLike(input.email))
     .maybeSingle();
 
   if (usuarioExistente) {
@@ -157,8 +163,23 @@ export async function criarAluno(input: CriarAlunoInput) {
   });
 
   if (authError || !authData.user) {
-    if (authError?.status === 422 || authError?.message.includes("already been registered")) {
+    // O Supabase responde 422 para vários erros de validação (senha fraca,
+    // email inválido...), então o conflito de email é identificado pelo code.
+    const code = authError?.code;
+    if (code === "email_exists" || code === "user_already_exists") {
       throw new AppError("Já existe um usuário com este email.", 409);
+    }
+    if (code === "weak_password") {
+      throw new AppError(
+        "Senha fraca: não atende aos requisitos de senha do Supabase (tamanho mínimo, letras, números ou símbolos).",
+        400
+      );
+    }
+    if (code === "email_address_invalid") {
+      throw new AppError("Email inválido ou não aceito pelo Supabase.", 400);
+    }
+    if (authError?.status && authError.status < 500) {
+      throw new AppError(`Erro ao criar usuário: ${authError.message}`, 400);
     }
     throw new AppError(`Erro ao criar usuário: ${authError?.message}`, 500);
   }
@@ -202,7 +223,7 @@ export async function atualizarAluno(id: string, input: AtualizarAlunoInput) {
     const { data: emailEmUso } = await supabaseAdmin
       .from("usuarios")
       .select("id")
-      .eq("email", input.email)
+      .ilike("email", escaparLike(input.email))
       .neq("id", alunoAtual.usuario.id)
       .maybeSingle();
 

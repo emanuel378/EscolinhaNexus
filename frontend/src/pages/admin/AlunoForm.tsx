@@ -1,4 +1,5 @@
 import { FormEvent, useEffect, useState } from "react";
+import { isAxiosError } from "axios";
 import { useNavigate, useParams } from "react-router-dom";
 import { useAluno, useAtualizarAluno, useCriarAluno } from "../../hooks/useAlunos";
 import { useTurmas } from "../../hooks/useTurmas";
@@ -6,6 +7,17 @@ import { useTurmas } from "../../hooks/useTurmas";
 const inputClass =
   "w-full rounded-lg border border-white/10 bg-nexus-bg/60 px-3 py-2 text-sm text-white placeholder-slate-500 outline-none transition focus:border-nexus-primary focus:ring-2 focus:ring-nexus-primary/40";
 const labelClass = "mb-1 block text-sm font-medium text-slate-300";
+
+// Usa a mensagem do backend (ex.: email já cadastrado, senha fraca) em vez
+// de um texto genérico, para o admin saber o que corrigir.
+function mensagemDeErro(err: unknown) {
+  if (isAxiosError<{ message?: string; erros?: { mensagem: string }[] }>(err) && err.response?.data) {
+    const { message, erros } = err.response.data;
+    if (erros?.length) return erros.map((e) => e.mensagem).join(" ");
+    if (message) return message;
+  }
+  return "Não foi possível salvar o aluno. Verifique os dados informados.";
+}
 
 function hojeISO() {
   return new Date().toISOString().substring(0, 10);
@@ -67,8 +79,8 @@ export function AlunoFormPage() {
         });
       }
       navigate("/admin/alunos");
-    } catch {
-      setErro("Não foi possível salvar o aluno. Verifique os dados informados.");
+    } catch (err) {
+      setErro(mensagemDeErro(err));
     }
   }
 

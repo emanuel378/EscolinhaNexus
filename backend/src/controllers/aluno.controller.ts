@@ -7,7 +7,7 @@ import * as historicoService from "../services/historico.service";
 
 const criarAlunoSchema = z.object({
   nome: z.string().min(2, "Nome é obrigatório."),
-  email: z.string().email("Email inválido."),
+  email: z.string().trim().toLowerCase().email("Email inválido."),
   senha: z.string().min(6, "Senha deve ter ao menos 6 caracteres."),
   dataNascimento: z.coerce.date(),
   telefone: z.string().optional(),
@@ -18,7 +18,7 @@ const criarAlunoSchema = z.object({
 
 const atualizarAlunoSchema = z.object({
   nome: z.string().min(2).optional(),
-  email: z.string().email().optional(),
+  email: z.string().trim().toLowerCase().email().optional(),
   dataNascimento: z.coerce.date().optional(),
   telefone: z.string().optional(),
   dataEntrada: z.coerce.date().optional(),
