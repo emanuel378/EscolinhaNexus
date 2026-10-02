@@ -71,7 +71,14 @@ interface FrequenciaAtualizadaRow {
 // específica via frequencia_id); se deixar de ser "presente", o ponto
 // automático correspondente é removido. Usa upsert com ignoreDuplicates
 // para não duplicar pontos ao salvar a mesma chamada de novo.
-async function sincronizarPontosDePresenca(frequencias: FrequenciaAtualizadaRow[]) {
+//
+// Os pontos são datados no dia do treino (e não no dia em que a chamada foi
+// salva): assim uma chamada de setembro feita só em outubro continua
+// contando para o ranking de setembro.
+async function sincronizarPontosDePresenca(
+  frequencias: FrequenciaAtualizadaRow[],
+  dataTreino: string
+) {
   const presentes = frequencias.filter((f) => f.status === "presente");
   const naoPresentes = frequencias.filter((f) => f.status !== "presente");
 
@@ -96,6 +103,7 @@ async function sincronizarPontosDePresenca(frequencias: FrequenciaAtualizadaRow[
         frequencia_id: f.id,
         pontos: PONTOS_POR_PRESENCA,
         motivo: "Presença no treino",
+        data: dataDaPontuacaoDoTreino(dataTreino),
       })),
       { onConflict: "frequencia_id", ignoreDuplicates: true }
     );
@@ -106,8 +114,14 @@ async function sincronizarPontosDePresenca(frequencias: FrequenciaAtualizadaRow[
   }
 }
 
+// Meio-dia UTC do dia do treino: cai no mesmo dia (e no mesmo mês) em
+// qualquer fuso do Brasil, que é o recorte usado pelo ranking.
+function dataDaPontuacaoDoTreino(dataTreino: string) {
+  return `${dataTreino.substring(0, 10)}T12:00:00.000Z`;
+}
+
 export async function marcarFrequencias(treinoId: string, registros: RegistroInput[]) {
-  await buscarTreinoPorId(treinoId);
+  const treino = await buscarTreinoPorId(treinoId);
 
   if (registros.length === 0) return;
 
@@ -128,7 +142,7 @@ export async function marcarFrequencias(treinoId: string, registros: RegistroInp
     throw new AppError(`Erro ao marcar frequências: ${error.message}`, 500);
   }
 
-  await sincronizarPontosDePresenca(frequencias);
+  await sincronizarPontosDePresenca(frequencias, treino.data);
 }
 
 interface HistoricoRow {

@@ -113,6 +113,16 @@ where f.status = 'presente'
   and not exists (select 1 from pontuacoes p where p.frequencia_id = f.id)
 on conflict (frequencia_id) do nothing;
 
+-- Pontos de presença passam a ser datados no dia do treino (antes ficavam com
+-- a data em que a chamada foi salva, então uma chamada atrasada de setembro
+-- caía no ranking de outubro). Corrige os lançamentos automáticos já gravados.
+update pontuacoes p
+set data = (t.data::timestamp + interval '12 hours') at time zone 'UTC'
+from frequencias f
+join treinos t on t.id = f.treino_id
+where p.frequencia_id = f.id
+  and p.data <> (t.data::timestamp + interval '12 hours') at time zone 'UTC';
+
 -- Relatório mensal: uma nota (0-10) por subitem de cada uma das 4 categorias
 -- sugeridas no briefing, em vez de uma nota macro única por categoria.
 create table if not exists relatorios (

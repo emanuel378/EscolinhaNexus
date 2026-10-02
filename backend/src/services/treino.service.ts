@@ -105,7 +105,36 @@ export async function atualizarTreino(id: string, input: Partial<TreinoInput>) {
     .eq("id", id);
 
   if (error) throw new AppError(`Erro ao atualizar treino: ${error.message}`, 500);
-  return buscarTreinoPorId(id);
+
+  const treino = await buscarTreinoPorId(id);
+  if (input.data) await moverPontosDePresenca(id, treino.data);
+  return treino;
+}
+
+// Os pontos automáticos de presença são datados no dia do treino (ver
+// frequencia.service.ts); se a data do treino mudar, eles acompanham, para
+// continuarem no mês certo do ranking.
+async function moverPontosDePresenca(treinoId: string, dataTreino: string) {
+  const { data: frequencias, error: frequenciasError } = await supabaseAdmin
+    .from("frequencias")
+    .select("id")
+    .eq("treino_id", treinoId)
+    .returns<{ id: string }[]>();
+
+  if (frequenciasError) {
+    throw new AppError(`Erro ao ajustar pontos de presença: ${frequenciasError.message}`, 500);
+  }
+  if (frequencias.length === 0) return;
+
+  const { error } = await supabaseAdmin
+    .from("pontuacoes")
+    .update({ data: `${dataTreino.substring(0, 10)}T12:00:00.000Z` })
+    .in(
+      "frequencia_id",
+      frequencias.map((f) => f.id)
+    );
+
+  if (error) throw new AppError(`Erro ao ajustar pontos de presença: ${error.message}`, 500);
 }
 
 // Próximo treino agendado (data >= hoje) da turma do aluno, usado na área
