@@ -25,7 +25,7 @@ export function FotoAlunoUpload({
     try {
       await uploadFoto.mutateAsync(arquivo);
     } catch {
-      setErro("Não foi possível enviar a foto. Use JPEG, PNG ou WEBP de até 5MB.");
+      setErro("Não foi possível enviar a foto. Use JPEG, PNG ou WEBP de até 4MB.");
     }
   }
 

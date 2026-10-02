@@ -33,7 +33,7 @@ export function errorHandler(
 
   if (err instanceof MulterError) {
     const mensagem =
-      err.code === "LIMIT_FILE_SIZE" ? "A imagem deve ter no máximo 5MB." : err.message;
+      err.code === "LIMIT_FILE_SIZE" ? "A imagem deve ter no máximo 4MB." : err.message;
     return res.status(400).json({ message: mensagem });
   }
 

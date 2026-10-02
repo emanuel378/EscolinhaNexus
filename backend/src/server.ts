@@ -13,7 +13,7 @@ import dashboardRoutes from "./routes/dashboard.routes";
 
 const app = express();
 
-app.use(cors({ origin: env.frontendUrl, credentials: true }));
+app.use(cors({ origin: env.frontendUrls, credentials: true }));
 app.use(express.json());
 
 app.get("/health", (_req, res) => {

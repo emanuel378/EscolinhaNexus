@@ -114,6 +114,36 @@ O frontend sobe em `http://localhost:5173`. Acesse essa URL, faça login com o
 admin de exemplo e você cairá no painel administrativo, de onde pode
 cadastrar novos alunos.
 
+## Deploy no Vercel (backend e frontend separados)
+
+São **dois projetos** no Vercel apontando para o mesmo repositório; o que
+muda entre eles é o *Root Directory*.
+
+**1. Backend** — Vercel → *Add New → Project* → importe o repositório:
+
+- Root Directory: `backend` (o Vercel detecta o Express sozinho em `src/server.ts`)
+- Environment Variables:
+  - `SUPABASE_URL`
+  - `SUPABASE_SERVICE_ROLE_KEY`
+  - `FRONTEND_URL` — URL do frontend no Vercel (pode deixar `http://localhost:5173`
+    por enquanto e voltar aqui no passo 3). Aceita várias, separadas por vírgula.
+- Deploy e teste `https://<seu-backend>.vercel.app/health` → `{"status":"ok"}`.
+
+**2. Frontend** — de novo *Add New → Project*, mesmo repositório:
+
+- Root Directory: `frontend` (preset Vite; o `vercel.json` já redireciona as
+  rotas do React Router para o `index.html`)
+- Environment Variables:
+  - `VITE_API_URL` — URL do backend do passo 1, sem `/` no final
+  - `VITE_SUPABASE_URL`
+  - `VITE_SUPABASE_ANON_KEY`
+
+**3.** Volte no projeto do backend, coloque a URL do frontend em `FRONTEND_URL`
+e faça *Redeploy* (variáveis só valem depois de um novo deploy).
+
+> Uploads de foto passam pelo backend: o Vercel limita o corpo da requisição a
+> ~4,5 MB, por isso as fotos aceitam até 4 MB.
+
 ## O que já funciona (Fases 1 a 4)
 
 - Login (admin e aluno) via Supabase Auth, com sessão e refresh automáticos

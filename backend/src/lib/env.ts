@@ -15,5 +15,10 @@ export const env = {
   // para ler/escrever no banco ignorando RLS e para operações de admin no
   // Supabase Auth (criar/remover usuário, definir role em app_metadata).
   supabaseServiceRoleKey: required("SUPABASE_SERVICE_ROLE_KEY"),
-  frontendUrl: process.env.FRONTEND_URL ?? "http://localhost:5173",
+  // Uma ou mais origens liberadas no CORS, separadas por vírgula
+  // (ex: "https://meu-front.vercel.app,http://localhost:5173").
+  frontendUrls: (process.env.FRONTEND_URL ?? "http://localhost:5173")
+    .split(",")
+    .map((url) => url.trim().replace(/\/$/, ""))
+    .filter(Boolean),
 };
