@@ -1,87 +1,82 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { useStatusRelatoriosDoMes } from "../../hooks/useRelatorios";
-import { Avatar } from "../../components/Avatar";
-import { Spinner } from "../../components/Spinner";
-
-function mesAtual() {
-  const agora = new Date();
-  return `${agora.getFullYear()}-${String(agora.getMonth() + 1).padStart(2, "0")}`;
-}
+import { Icon } from "../../components/Icon";
+import { AvatarAtleta, Barra, CabecalhoPagina, Esqueleto, EstadoVazio } from "../../components/AdminUI";
+import { mesAtual } from "../../utils/data";
 
 export function RelatoriosStatusPage() {
   const [mesReferencia, setMesReferencia] = useState(mesAtual());
+  const [soPendentes, setSoPendentes] = useState(false);
   const { data, isLoading } = useStatusRelatoriosDoMes(mesReferencia);
 
   const lancados = data?.alunos.filter((a) => a.relatorioId !== null).length ?? 0;
   const total = data?.alunos.length ?? 0;
+  const progresso = total > 0 ? Math.round((lancados / total) * 100) : 0;
+  const alunos = (data?.alunos ?? []).filter((a) => !soPendentes || a.relatorioId === null);
 
   return (
-    <div className="mx-auto max-w-lg">
-      <div className="mb-4 flex items-center justify-between">
-        <h1 className="font-display text-2xl font-bold uppercase tracking-wide text-white">
-          Relatórios mensais
-        </h1>
-        <input
-          type="month"
-          value={mesReferencia}
-          onChange={(e) => setMesReferencia(e.target.value)}
-          className="rounded-lg border border-white/10 bg-nexus-surface px-3 py-1.5 text-sm text-white outline-none transition focus:border-nexus-primary focus:ring-2 focus:ring-nexus-primary/40"
-        />
-      </div>
+    <div>
+      <CabecalhoPagina rotulo="Avaliações técnicas" titulo="Relatórios mensais" />
 
-      {data && (
-        <p className="mb-4 text-sm text-slate-400">
-          <span className="font-semibold text-white">
-            {lancados} de {total}
-          </span>{" "}
-          alunos com relatório lançado neste mês.
-        </p>
-      )}
-
-      {isLoading && (
-        <div className="flex items-center gap-2 text-sm text-slate-400">
-          <Spinner /> Carregando...
+      <section className="card mb-5 p-4 lg:p-6">
+        <div className="flex flex-wrap items-end justify-between gap-3">
+          <div>
+            <p className="label-up text-nexus-primary">Progresso do mês</p>
+            <p className="num mt-1 text-4xl text-white">
+              {lancados}
+              <span className="text-lg text-slate-400"> de {total}</span>
+            </p>
+            <p className="text-sm text-slate-400">atletas avaliados</p>
+          </div>
+          <input
+            type="month"
+            value={mesReferencia}
+            onChange={(e) => setMesReferencia(e.target.value || mesAtual())}
+            className="campo w-auto"
+            aria-label="Mês de referência"
+          />
         </div>
-      )}
-      {data && data.alunos.length === 0 && (
-        <div className="rounded-xl border border-dashed border-white/10 bg-nexus-surface/50 p-8 text-center text-sm text-slate-400">
-          Nenhum aluno ativo encontrado.
-        </div>
+        <Barra valor={progresso} className="mt-4 h-2.5" />
+        <label className="mt-4 flex w-fit cursor-pointer items-center gap-2 text-sm text-slate-300">
+          <input
+            type="checkbox"
+            checked={soPendentes}
+            onChange={(e) => setSoPendentes(e.target.checked)}
+            className="h-4 w-4 accent-nexus-primary"
+          />
+          Mostrar só pendentes
+        </label>
+      </section>
+
+      {isLoading && <Esqueleto linhas={4} altura="h-16" />}
+      {data && alunos.length === 0 && (
+        <EstadoVazio icone="task_alt">
+          {total === 0 ? "Nenhum aluno ativo encontrado." : "Todos os relatórios do mês foram lançados!"}
+        </EstadoVazio>
       )}
 
-      {data && data.alunos.length > 0 && (
-        <div className="overflow-hidden rounded-xl border border-white/10 bg-nexus-surface">
-          {data.alunos.map((aluno) => (
-            <div
+      {alunos.length > 0 && (
+        <div className="grid grid-cols-1 gap-2 md:grid-cols-2 lg:gap-3">
+          {alunos.map((aluno) => (
+            <Link
               key={aluno.alunoId}
-              className="flex items-center justify-between border-b border-white/5 px-4 py-3 text-sm last:border-0"
+              to={`/admin/alunos/${aluno.alunoId}${aluno.relatorioId ? "" : "?relatorio=1"}`}
+              className="card flex items-center gap-3 p-3 transition hover:border-nexus-primary/30"
             >
-              <div className="flex items-center gap-3">
-                <Avatar nome={aluno.nome} fotoUrl={aluno.fotoUrl} tamanho="sm" />
-                <div>
-                  <p className="font-medium text-white">{aluno.nome}</p>
-                  <p className="text-xs text-slate-500">{aluno.turma ?? "—"}</p>
-                </div>
+              <AvatarAtleta nome={aluno.nome} fotoUrl={aluno.fotoUrl} />
+              <div className="min-w-0 flex-1">
+                <p className="truncate font-semibold text-white">{aluno.nome}</p>
+                <p className="truncate text-xs text-slate-400">{aluno.turma ?? "—"}</p>
               </div>
-              <div className="flex items-center gap-3">
-                <span
-                  className={`rounded-full border px-2.5 py-0.5 text-[11px] font-semibold uppercase tracking-wide ${
-                    aluno.relatorioId
-                      ? "border-status-verde/30 bg-status-verde/10 text-status-verde"
-                      : "border-status-amarelo/30 bg-status-amarelo/10 text-status-amarelo"
-                  }`}
-                >
-                  {aluno.relatorioId ? "Lançado" : "Pendente"}
-                </span>
-                <Link
-                  to={`/admin/alunos/${aluno.alunoId}${aluno.relatorioId ? "" : "?relatorio=1"}`}
-                  className="rounded-lg border border-white/10 px-3 py-1 text-xs text-slate-300 transition hover:bg-white/10 hover:text-white"
-                >
-                  Ver perfil
-                </Link>
-              </div>
-            </div>
+              <span className={aluno.relatorioId ? "chip-verde" : "chip-amarelo"}>
+                {aluno.relatorioId ? "Lançado" : "Pendente"}
+              </span>
+              <Icon
+                name={aluno.relatorioId ? "chevron_right" : "edit_note"}
+                className={`text-[22px] ${aluno.relatorioId ? "text-slate-500" : "text-nexus-highlight"}`}
+              />
+            </Link>
           ))}
         </div>
       )}

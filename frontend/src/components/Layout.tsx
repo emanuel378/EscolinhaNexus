@@ -4,6 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "../context/AuthContext";
 import * as alunoService from "../services/aluno.service";
 import { Avatar } from "./Avatar";
+import { AdminShell } from "./AdminShell";
 import { IconCalendar, IconClipboard, IconHome, IconTrend, IconTrophy } from "./Icons";
 
 interface NavItem {
@@ -12,15 +13,6 @@ interface NavItem {
   end?: boolean;
   icon?: ComponentType<SVGProps<SVGSVGElement>>;
 }
-
-const NAV_ADMIN: NavItem[] = [
-  { to: "/admin", label: "Painel", end: true },
-  { to: "/admin/alunos", label: "Alunos" },
-  { to: "/admin/turmas", label: "Turmas" },
-  { to: "/admin/treinos", label: "Treinos" },
-  { to: "/admin/ranking", label: "Ranking" },
-  { to: "/admin/relatorios", label: "Relatórios" },
-];
 
 // Perfil fica fora da barra de abas: é acessado pelo avatar no topo, como
 // em apps mobile — assim a barra inferior cabe em 5 itens no celular.
@@ -42,6 +34,13 @@ const TITULOS_ALUNO: Record<string, string> = {
 };
 
 export function Layout() {
+  const { usuario } = useAuth();
+  // O admin tem um layout próprio (menu lateral no PC, barra inferior no celular).
+  if (usuario?.role === "admin") return <AdminShell />;
+  return <LayoutPadrao />;
+}
+
+function LayoutPadrao() {
   const { usuario, logout } = useAuth();
   const navigate = useNavigate();
   const { pathname } = useLocation();
@@ -58,7 +57,6 @@ export function Layout() {
     navigate("/login", { replace: true });
   }
 
-  const nav = ehAluno ? NAV_ALUNO : NAV_ADMIN;
   const tituloPagina = ehAluno ? TITULOS_ALUNO[pathname] : undefined;
 
   return (
@@ -107,27 +105,6 @@ export function Layout() {
             )}
           </div>
         </div>
-        {usuario && !ehAluno && (
-          <nav className="mx-auto flex max-w-5xl gap-1 overflow-x-auto px-4 pb-2 sm:px-6">
-            {nav.map((item) => (
-              <NavLink
-                key={item.to}
-                to={item.to}
-                end={item.end}
-                className={({ isActive }) =>
-                  `flex items-center gap-1.5 whitespace-nowrap rounded-lg px-3 py-1.5 text-sm font-medium transition ${
-                    isActive
-                      ? "bg-nexus-primary text-nexus-bg"
-                      : "text-slate-400 hover:bg-white/5 hover:text-white"
-                  }`
-                }
-              >
-                {item.icon && <item.icon className="h-4 w-4" />}
-                {item.label}
-              </NavLink>
-            ))}
-          </nav>
-        )}
       </header>
 
       <main

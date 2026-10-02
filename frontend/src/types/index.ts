@@ -75,6 +75,8 @@ export interface Treino {
   observacao: string | null;
   criadoEm: string;
   turma: { id: string; nome: string } | null;
+  /** Quantos alunos já têm presença/falta registrada (0 = chamada não feita). */
+  frequenciasRegistradas: number;
 }
 
 export interface CriarTreinoInput {

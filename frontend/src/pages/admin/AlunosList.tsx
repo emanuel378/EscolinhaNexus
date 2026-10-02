@@ -1,133 +1,190 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-import { useAlterarStatusAluno, useAlunos, useRemoverAluno } from "../../hooks/useAlunos";
-import { StatusBadge } from "../../components/StatusBadge";
-import { Avatar } from "../../components/Avatar";
-import { Spinner } from "../../components/Spinner";
-import { StatusAluno } from "../../types";
+import { useAlunos } from "../../hooks/useAlunos";
+import { useRanking } from "../../hooks/useRanking";
+import { useTurmas } from "../../hooks/useTurmas";
+import { Icon } from "../../components/Icon";
+import {
+  AvatarAtleta,
+  Barra,
+  CabecalhoPagina,
+  Esqueleto,
+  EstadoVazio,
+  MensagemErro,
+} from "../../components/AdminUI";
+import { mesAtual } from "../../utils/data";
+
+type FiltroStatus = "todos" | "ativo" | "inativo";
+
+function normalizar(texto: string) {
+  return texto
+    .normalize("NFD")
+    .replace(/[̀-ͯ]/g, "")
+    .toLowerCase();
+}
 
 export function AlunosListPage() {
-  const [filtro, setFiltro] = useState<StatusAluno | undefined>(undefined);
-  const { data: alunos, isLoading, isError } = useAlunos(filtro);
-  const alterarStatus = useAlterarStatusAluno();
-  const removerAluno = useRemoverAluno();
+  const [busca, setBusca] = useState("");
+  const [status, setStatus] = useState<FiltroStatus>("todos");
+  const [turmaId, setTurmaId] = useState("");
 
-  async function handleToggleStatus(id: string, statusAtual: StatusAluno) {
-    const novoStatus: StatusAluno = statusAtual === "ativo" ? "inativo" : "ativo";
-    await alterarStatus.mutateAsync({ id, status: novoStatus });
-  }
+  const { data: alunos, isLoading, isError } = useAlunos();
+  const { data: turmas } = useTurmas();
+  // Pontos e frequência do mês vêm do ranking (só inclui alunos ativos).
+  const { data: ranking } = useRanking({ mesReferencia: mesAtual() });
 
-  async function handleRemover(id: string, nome: string) {
-    if (!confirm(`Remover o aluno "${nome}"? Esta ação não pode ser desfeita.`)) {
-      return;
-    }
-    await removerAluno.mutateAsync(id);
-  }
+  const rankingPorAluno = useMemo(
+    () => new Map(ranking?.ranking.map((r) => [r.alunoId, r]) ?? []),
+    [ranking]
+  );
+
+  const contagem = {
+    todos: alunos?.length ?? 0,
+    ativo: alunos?.filter((a) => a.status === "ativo").length ?? 0,
+    inativo: alunos?.filter((a) => a.status === "inativo").length ?? 0,
+  };
+
+  const filtrados = useMemo(() => {
+    const termo = normalizar(busca.trim());
+    return (alunos ?? [])
+      .filter((a) => status === "todos" || a.status === status)
+      .filter((a) => !turmaId || a.turmaId === turmaId)
+      .filter(
+        (a) =>
+          !termo ||
+          normalizar(
+            [a.usuario.nome, a.usuario.email, a.turma?.nome ?? "", a.telefone ?? ""].join(" ")
+          ).includes(termo)
+      )
+      .sort((a, b) => a.usuario.nome.localeCompare(b.usuario.nome, "pt-BR"));
+  }, [alunos, busca, status, turmaId]);
+
+  const chipClasse = (ativo: boolean) =>
+    `inline-flex h-10 shrink-0 items-center gap-2 rounded-full border px-4 text-sm font-semibold transition ${
+      ativo
+        ? "border-nexus-primary/60 bg-nexus-primary/15 text-nexus-highlight shadow-[0_0_12px_rgba(0,180,255,0.25)]"
+        : "border-white/10 bg-nexus-surface text-slate-300 hover:border-white/20"
+    }`;
 
   return (
     <div>
-      <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
-        <h1 className="font-display text-2xl font-bold uppercase tracking-wide text-white">
-          Alunos
-        </h1>
-        <div className="flex items-center gap-2">
-          <select
-            value={filtro ?? ""}
-            onChange={(e) =>
-              setFiltro(e.target.value === "" ? undefined : (e.target.value as StatusAluno))
-            }
-            className="rounded-lg border border-white/10 bg-nexus-surface px-3 py-2 text-sm text-white outline-none transition focus:border-nexus-primary focus:ring-2 focus:ring-nexus-primary/40"
-          >
-            <option value="">Todos os status</option>
-            <option value="ativo">Ativos</option>
-            <option value="inativo">Inativos</option>
-          </select>
-          <Link
-            to="/admin/alunos/novo"
-            className="rounded-lg bg-nexus-primary px-4 py-2 text-sm font-semibold text-nexus-bg shadow-nexus-glow transition hover:bg-nexus-highlight"
-          >
-            + Novo aluno
+      <CabecalhoPagina
+        titulo="Atletas & Alunos"
+        subtitulo={
+          <>
+            <span className="font-semibold text-nexus-primary">{contagem.ativo}</span> atletas ativos
+            no centro
+          </>
+        }
+        acao={
+          <Link to="/admin/alunos/novo" className="btn-primario shadow-nexus-glow">
+            <Icon name="person_add" className="text-[20px]" />
+            Novo
           </Link>
-        </div>
+        }
+      />
+
+      <div className="relative mb-4">
+        <Icon
+          name="search"
+          className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-[22px] text-slate-400"
+        />
+        <input
+          value={busca}
+          onChange={(e) => setBusca(e.target.value)}
+          placeholder="Buscar por nome, email, telefone ou turma..."
+          className="campo h-12 pl-12 lg:h-12"
+        />
       </div>
 
-      {isLoading && (
-        <div className="flex items-center gap-2 text-sm text-slate-400">
-          <Spinner /> Carregando alunos...
-        </div>
-      )}
-      {isError && <p className="text-sm text-red-400">Erro ao carregar alunos.</p>}
+      <div className="-mx-4 mb-5 flex gap-2 overflow-x-auto px-4 pb-1 lg:mx-0 lg:flex-wrap lg:px-0">
+        {(
+          [
+            ["todos", "Todos"],
+            ["ativo", "Ativos"],
+            ["inativo", "Inativos"],
+          ] as const
+        ).map(([valor, rotulo]) => (
+          <button key={valor} onClick={() => setStatus(valor)} className={chipClasse(status === valor)}>
+            {rotulo}
+            <span className="rounded-full bg-white/10 px-2 text-xs">{contagem[valor]}</span>
+          </button>
+        ))}
+        {turmas && turmas.length > 0 && <span className="mx-1 w-px shrink-0 self-stretch bg-white/10" />}
+        {turmas?.map((t) => (
+          <button
+            key={t.id}
+            onClick={() => setTurmaId((atual) => (atual === t.id ? "" : t.id))}
+            className={chipClasse(turmaId === t.id)}
+          >
+            {t.nome}
+          </button>
+        ))}
+      </div>
 
-      {alunos && alunos.length === 0 && (
-        <div className="rounded-xl border border-dashed border-white/10 bg-nexus-surface/50 p-8 text-center text-sm text-slate-400">
-          Nenhum aluno cadastrado.
-        </div>
+      {isLoading && <Esqueleto linhas={4} altura="h-36" />}
+      {isError && <MensagemErro>Erro ao carregar alunos.</MensagemErro>}
+
+      {alunos && filtrados.length === 0 && (
+        <EstadoVazio icone="person_search">
+          {alunos.length === 0 ? "Nenhum aluno cadastrado." : "Nenhum aluno encontrado com esses filtros."}
+        </EstadoVazio>
       )}
 
-      {alunos && alunos.length > 0 && (
-        <div className="overflow-x-auto rounded-xl border border-white/10 bg-nexus-surface">
-          <table className="w-full min-w-[720px] text-left text-sm">
-            <thead className="bg-white/5 text-slate-400">
-              <tr>
-                <th className="px-4 py-3 font-medium">Nome</th>
-                <th className="px-4 py-3 font-medium">Turma</th>
-                <th className="px-4 py-3 font-medium">Status</th>
-                <th className="px-4 py-3 font-medium text-right">Ações</th>
-              </tr>
-            </thead>
-            <tbody>
-              {alunos.map((aluno) => (
-                <tr key={aluno.id} className="border-t border-white/5">
-                  <td className="px-4 py-3">
-                    <div className="flex items-center gap-3">
-                      <Avatar nome={aluno.usuario.nome} fotoUrl={aluno.fotoUrl} tamanho="sm" />
-                      <div>
-                        <Link
-                          to={`/admin/alunos/${aluno.id}`}
-                          className="font-medium text-white hover:text-nexus-highlight hover:underline"
-                        >
-                          {aluno.usuario.nome}
-                        </Link>
-                        <div className="text-xs text-slate-500">{aluno.usuario.email}</div>
-                      </div>
-                    </div>
-                  </td>
-                  <td className="px-4 py-3 text-slate-400">{aluno.turma?.nome ?? "—"}</td>
-                  <td className="px-4 py-3">
-                    <StatusBadge status={aluno.status} />
-                  </td>
-                  <td className="px-4 py-3">
-                    <div className="flex justify-end gap-2">
-                      <Link
-                        to={`/admin/alunos/${aluno.id}?relatorio=1`}
-                        className="rounded-lg border border-nexus-primary/40 bg-nexus-primary/10 px-3 py-1 text-xs font-medium text-nexus-primary transition hover:bg-nexus-primary/20"
-                      >
-                        Relatório
-                      </Link>
-                      <Link
-                        to={`/admin/alunos/${aluno.id}/editar`}
-                        className="rounded-lg border border-white/10 px-3 py-1 text-xs text-slate-300 transition hover:bg-white/10 hover:text-white"
-                      >
-                        Editar
-                      </Link>
-                      <button
-                        onClick={() => handleToggleStatus(aluno.id, aluno.status)}
-                        className="rounded-lg border border-white/10 px-3 py-1 text-xs text-slate-300 transition hover:bg-white/10 hover:text-white"
-                      >
-                        {aluno.status === "ativo" ? "Desativar" : "Ativar"}
-                      </button>
-                      <button
-                        onClick={() => handleRemover(aluno.id, aluno.usuario.nome)}
-                        className="rounded-lg border border-status-vermelho/30 px-3 py-1 text-xs text-status-vermelho transition hover:bg-status-vermelho/10"
-                      >
-                        Remover
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+      {filtrados.length > 0 && (
+        <div className="grid grid-cols-1 gap-3 md:grid-cols-2 2xl:grid-cols-3 lg:gap-4">
+          {filtrados.map((aluno) => {
+            const doMes = rankingPorAluno.get(aluno.id);
+            const ativo = aluno.status === "ativo";
+            return (
+              <Link
+                key={aluno.id}
+                to={`/admin/alunos/${aluno.id}`}
+                className="card group block p-4 transition hover:border-nexus-primary/40 hover:shadow-nexus-glow"
+              >
+                <div className="flex items-start gap-3">
+                  <span className="relative">
+                    <AvatarAtleta
+                      nome={aluno.usuario.nome}
+                      fotoUrl={aluno.fotoUrl}
+                      destaque={doMes?.posicao === 1 && doMes.pontos > 0}
+                    />
+                    <span
+                      className={`absolute bottom-0 right-0 h-3.5 w-3.5 rounded-full border-2 border-nexus-surface ${
+                        ativo ? "bg-nexus-primary" : "bg-red-400"
+                      }`}
+                    />
+                  </span>
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate font-chivo text-lg font-bold text-white">
+                      {aluno.usuario.nome}
+                    </p>
+                    <p className="truncate text-sm text-slate-400">{aluno.turma?.nome ?? "Sem turma"}</p>
+                  </div>
+                  <span className={ativo ? "chip-azul" : "chip-vermelho"}>{ativo ? "Ativo" : "Inativo"}</span>
+                  <Icon
+                    name="chevron_right"
+                    className="text-[22px] text-slate-400 transition group-hover:translate-x-0.5 group-hover:text-white"
+                  />
+                </div>
+
+                <div className="mt-3 flex items-center gap-3 rounded-lg bg-nexus-bg/60 px-3 py-2.5">
+                  <Icon name="emoji_events" className="text-[22px] text-nexus-gold" />
+                  <span className="num text-xl text-nexus-gold">
+                    {doMes ? doMes.pontos.toLocaleString("pt-BR") : "—"}
+                  </span>
+                  <span className="text-xs font-semibold text-slate-400">pts</span>
+                  <div className="ml-auto flex min-w-0 items-center gap-2">
+                    <Barra valor={doMes?.frequenciaPercentual ?? 0} className="hidden w-16 sm:block xl:w-20" />
+                    <span className="num text-sm text-white">
+                      {doMes?.frequenciaPercentual != null ? `${doMes.frequenciaPercentual}%` : "—"}
+                    </span>
+                    <span className="label-up text-slate-400">Presenças</span>
+                  </div>
+                </div>
+              </Link>
+            );
+          })}
         </div>
       )}
     </div>

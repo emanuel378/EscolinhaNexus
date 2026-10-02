@@ -22,11 +22,15 @@ interface TreinoRow {
   observacao: string | null;
   criado_em: string;
   turmas: { id: string; nome: string } | null;
+  frequencias: { count: number }[];
 }
 
+// frequencias(count) = quantos alunos já têm presença/falta registrada no
+// treino; o painel usa para mostrar se a chamada já foi feita.
 const SELECT_TREINO = `
   id, turma_id, data, hora_inicio, hora_fim, local, tipo, observacao, criado_em,
-  turmas ( id, nome )
+  turmas ( id, nome ),
+  frequencias ( count )
 `;
 
 function paraApi(row: TreinoRow) {
@@ -41,6 +45,7 @@ function paraApi(row: TreinoRow) {
     observacao: row.observacao,
     criadoEm: row.criado_em,
     turma: row.turmas ? { id: row.turmas.id, nome: row.turmas.nome } : null,
+    frequenciasRegistradas: row.frequencias?.[0]?.count ?? 0,
   };
 }
 

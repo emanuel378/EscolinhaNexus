@@ -4,9 +4,8 @@ import { useNavigate, useParams } from "react-router-dom";
 import { useAluno, useAtualizarAluno, useCriarAluno } from "../../hooks/useAlunos";
 import { useTurmas } from "../../hooks/useTurmas";
 
-const inputClass =
-  "w-full rounded-lg border border-white/10 bg-nexus-bg/60 px-3 py-2 text-sm text-white placeholder-slate-500 outline-none transition focus:border-nexus-primary focus:ring-2 focus:ring-nexus-primary/40";
-const labelClass = "mb-1 block text-sm font-medium text-slate-300";
+const inputClass = "campo";
+const labelClass = "rotulo";
 
 // Usa a mensagem do backend (ex.: email já cadastrado, senha fraca) em vez
 // de um texto genérico, para o admin saber o que corrigir.
@@ -87,14 +86,14 @@ export function AlunoFormPage() {
   const enviando = criarAluno.isPending || atualizarAluno.isPending;
 
   return (
-    <div className="mx-auto max-w-lg">
-      <h1 className="mb-6 font-display text-2xl font-bold uppercase tracking-wide text-white">
+    <div className="mx-auto max-w-2xl">
+      <h1 className="titulo-pagina mb-5 lg:mb-6">
         {modoEdicao ? "Editar aluno" : "Novo aluno"}
       </h1>
 
       <form
         onSubmit={handleSubmit}
-        className="space-y-4 rounded-xl border border-white/10 bg-nexus-surface p-6"
+        className="card space-y-4 p-4 lg:p-6"
       >
         <div>
           <label className={labelClass}>Nome</label>
@@ -177,14 +176,14 @@ export function AlunoFormPage() {
           <button
             type="button"
             onClick={() => navigate("/admin/alunos")}
-            className="rounded-lg border border-white/10 px-4 py-2 text-sm text-slate-300 transition hover:bg-white/10 hover:text-white"
+            className="btn-secundario flex-1 sm:flex-none"
           >
             Cancelar
           </button>
           <button
             type="submit"
             disabled={enviando}
-            className="rounded-lg bg-nexus-primary px-4 py-2 text-sm font-semibold text-nexus-bg shadow-nexus-glow transition hover:bg-nexus-highlight disabled:opacity-60"
+            className="btn-primario flex-1 sm:flex-none sm:px-8"
           >
             {enviando ? "Salvando..." : "Salvar"}
           </button>

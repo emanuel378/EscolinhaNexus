@@ -15,14 +15,20 @@ export default {
           highlight: "#7ED8FF",
           gold: "#FFD200",
           surface: "#1A1F2B",
+          // Superfície elevada (popovers, botões secundários) e fundo de inputs
+          raised: "#232A3B",
+          input: "#0B1220",
         },
       },
       boxShadow: {
         "nexus-glow": "0 0 24px 0 rgba(0, 180, 255, 0.35)",
+        "nexus-gold": "0 0 20px 0 rgba(255, 210, 0, 0.30)",
       },
       fontFamily: {
         sans: ["Inter", "system-ui", "sans-serif"],
         display: ["Rajdhani", "system-ui", "sans-serif"],
+        // Títulos e números do painel do admin
+        chivo: ["Chivo", "system-ui", "sans-serif"],
       },
     },
   },

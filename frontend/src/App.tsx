@@ -11,6 +11,7 @@ import { TurmaFormPage } from "./pages/admin/TurmaForm";
 import { TreinosListPage } from "./pages/admin/TreinosList";
 import { TreinoFormPage } from "./pages/admin/TreinoForm";
 import { ChamadaPage } from "./pages/admin/Chamada";
+import { ChamadaSelecaoPage } from "./pages/admin/ChamadaSelecao";
 import { RankingPage } from "./pages/admin/Ranking";
 import { RelatoriosStatusPage } from "./pages/admin/RelatoriosStatus";
 import { AlunoHomePage } from "./pages/aluno/Home";
@@ -41,6 +42,7 @@ export default function App() {
           <Route path="/admin/treinos/novo" element={<TreinoFormPage />} />
           <Route path="/admin/treinos/:id/editar" element={<TreinoFormPage />} />
           <Route path="/admin/treinos/:id/chamada" element={<ChamadaPage />} />
+          <Route path="/admin/chamada" element={<ChamadaSelecaoPage />} />
 
           <Route path="/admin/ranking" element={<RankingPage />} />
           <Route path="/admin/relatorios" element={<RelatoriosStatusPage />} />

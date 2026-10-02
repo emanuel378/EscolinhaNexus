@@ -15,8 +15,13 @@ export function useMarcarFrequencias(treinoId: string) {
   return useMutation({
     mutationFn: (registros: { alunoId: string; status: StatusFrequencia }[]) =>
       frequenciaService.marcarFrequencias(treinoId, registros),
-    onSuccess: () =>
-      queryClient.invalidateQueries({ queryKey: ["frequencias", "ficha", treinoId] }),
+    // A chamada mexe na frequência, nos pontos de presença, no ranking, no
+    // painel e no status "chamada feita" dos treinos.
+    onSuccess: () => {
+      for (const queryKey of [["frequencias"], ["pontuacoes"], ["ranking"], ["dashboard"], ["treinos"]]) {
+        queryClient.invalidateQueries({ queryKey });
+      }
+    },
   });
 }
 
