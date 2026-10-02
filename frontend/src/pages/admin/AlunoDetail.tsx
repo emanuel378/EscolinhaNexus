@@ -238,6 +238,27 @@ function SecaoMensalidades({ alunoId }: { alunoId: string }) {
   );
 }
 
+// Mês (YYYY-MM) em UTC, o mesmo recorte usado pelo ranking no backend.
+function mesUtcAtual() {
+  return new Date().toISOString().substring(0, 7);
+}
+
+function formatarMes(mes: string) {
+  const [ano, m] = mes.split("-").map(Number);
+  return new Date(Date.UTC(ano, m - 1, 1)).toLocaleDateString("pt-BR", {
+    month: "long",
+    year: "numeric",
+    timeZone: "UTC",
+  });
+}
+
+// Data enviada para o lançamento: no mês corrente usa o momento atual (conta
+// também no recorte semanal do ranking); em outro mês, o dia 15 ao meio-dia
+// UTC, que cai dentro do mês em qualquer fuso.
+function dataDoLancamento(mes: string) {
+  return mes === mesUtcAtual() ? undefined : `${mes}-15T12:00:00.000Z`;
+}
+
 function SecaoPontuacao({ alunoId }: { alunoId: string }) {
   const { data, isLoading } = usePontuacoesDoAluno(alunoId);
   const lancarPontuacao = useLancarPontuacao(alunoId);
@@ -246,13 +267,28 @@ function SecaoPontuacao({ alunoId }: { alunoId: string }) {
   const [mostrarForm, setMostrarForm] = useState(false);
   const [pontos, setPontos] = useState("");
   const [motivo, setMotivo] = useState("");
+  const [mesLancamento, setMesLancamento] = useState(mesUtcAtual);
+  const [mesFiltro, setMesFiltro] = useState("");
   const [erro, setErro] = useState<string | null>(null);
+
+  const mesesComPontos = data
+    ? Array.from(new Set(data.historico.map((p) => p.data.substring(0, 7)))).sort().reverse()
+    : [];
+  const historicoFiltrado = data
+    ? data.historico.filter((p) => !mesFiltro || p.data.substring(0, 7) === mesFiltro)
+    : [];
+  const totalFiltrado = historicoFiltrado.reduce((soma, p) => soma + p.pontos, 0);
 
   async function handleAdicionar(e: FormEvent) {
     e.preventDefault();
     setErro(null);
     try {
-      await lancarPontuacao.mutateAsync({ pontos: Number(pontos), motivo });
+      await lancarPontuacao.mutateAsync({
+        pontos: Number(pontos),
+        motivo,
+        data: dataDoLancamento(mesLancamento),
+      });
+      setMesFiltro(mesLancamento);
       setPontos("");
       setMotivo("");
       setMostrarForm(false);
@@ -279,11 +315,42 @@ function SecaoPontuacao({ alunoId }: { alunoId: string }) {
       </div>
 
       {data && (
-        <p className="mb-4 font-display text-3xl font-bold text-nexus-gold">{data.total} pts</p>
+        <div className="mb-4 flex items-end justify-between gap-3">
+          <div>
+            <p className="font-display text-3xl font-bold text-nexus-gold">
+              {mesFiltro ? totalFiltrado : data.total} pts
+            </p>
+            <p className="text-xs text-slate-400">
+              {mesFiltro ? `em ${formatarMes(mesFiltro)}` : "total acumulado"}
+            </p>
+          </div>
+          <select
+            value={mesFiltro}
+            onChange={(e) => setMesFiltro(e.target.value)}
+            className="rounded-lg border border-white/10 bg-nexus-bg/60 px-1.5 py-1 text-xs capitalize text-white outline-none transition focus:border-nexus-primary focus:ring-2 focus:ring-nexus-primary/40"
+          >
+            <option value="">Todos os meses</option>
+            {mesesComPontos.map((mes) => (
+              <option key={mes} value={mes}>
+                {formatarMes(mes)}
+              </option>
+            ))}
+          </select>
+        </div>
       )}
 
       {mostrarForm && (
         <form onSubmit={handleAdicionar} className="mb-4 space-y-2 rounded-lg bg-white/5 p-3">
+          <label className="flex items-center gap-2 text-xs text-slate-300">
+            Mês dos pontos
+            <input
+              required
+              type="month"
+              value={mesLancamento}
+              onChange={(e) => setMesLancamento(e.target.value)}
+              className={`flex-1 [color-scheme:dark] ${inputClass}`}
+            />
+          </label>
           <div className="grid grid-cols-3 gap-2">
             <input
               required
@@ -307,7 +374,9 @@ function SecaoPontuacao({ alunoId }: { alunoId: string }) {
             disabled={lancarPontuacao.isPending}
             className="w-full rounded-lg bg-nexus-primary py-1.5 text-xs font-semibold text-nexus-bg shadow-nexus-glow transition hover:bg-nexus-highlight disabled:opacity-60"
           >
-            {lancarPontuacao.isPending ? "Salvando..." : "Lançar"}
+            {lancarPontuacao.isPending
+              ? "Salvando..."
+              : `Lançar em ${mesLancamento ? formatarMes(mesLancamento) : "—"}`}
           </button>
         </form>
       )}
@@ -317,13 +386,15 @@ function SecaoPontuacao({ alunoId }: { alunoId: string }) {
           <Spinner /> Carregando...
         </div>
       )}
-      {data && data.historico.length === 0 && (
-        <p className="text-sm text-slate-400">Nenhuma pontuação lançada.</p>
+      {data && historicoFiltrado.length === 0 && (
+        <p className="text-sm text-slate-400">
+          {mesFiltro ? "Nenhuma pontuação neste mês." : "Nenhuma pontuação lançada."}
+        </p>
       )}
 
-      {data && data.historico.length > 0 && (
+      {historicoFiltrado.length > 0 && (
         <div className="max-h-48 space-y-1 overflow-y-auto text-xs">
-          {data.historico.map((p) => (
+          {historicoFiltrado.map((p) => (
             <div key={p.id} className="flex items-center justify-between border-t border-white/5 py-1.5">
               <span className="text-slate-400">
                 {new Date(p.data).toLocaleDateString("pt-BR")} · {p.motivo}
