@@ -21,6 +21,7 @@ import {
 import { useRanking } from "../../hooks/useRanking";
 import { RelatorioNotasForm, RelatorioNotasResumo } from "../../components/RelatorioNotas";
 import { FotoAlunoUpload } from "../../components/FotoAlunoUpload";
+import { BaixarRelatorioBotao } from "../../components/BaixarRelatorioBotao";
 import { Icon } from "../../components/Icon";
 import { Esqueleto, MensagemErro, TituloSecao } from "../../components/AdminUI";
 import { NotasRelatorio, StatusFrequencia, StatusMensalidade } from "../../types";
@@ -578,7 +579,15 @@ function SecaoMensalidades({ alunoId }: { alunoId: string }) {
 // Relatórios (avaliação do atleta)
 // ---------------------------------------------------------------------------
 
-function SecaoRelatorios({ alunoId, abrirFormInicial }: { alunoId: string; abrirFormInicial: boolean }) {
+function SecaoRelatorios({
+  alunoId,
+  atleta,
+  abrirFormInicial,
+}: {
+  alunoId: string;
+  atleta: { nome: string; turma: string | null };
+  abrirFormInicial: boolean;
+}) {
   const { data: relatorios, isLoading } = useRelatoriosDoAluno(alunoId);
   const criarRelatorio = useCriarRelatorio(alunoId);
   const removerRelatorio = useRemoverRelatorio(alunoId);
@@ -697,6 +706,7 @@ function SecaoRelatorios({ alunoId, abrirFormInicial }: { alunoId: string; abrir
             <div key={r.id} className="rounded-xl border border-white/10 bg-nexus-bg/50 p-3 text-xs lg:p-4">
               <div className="mb-3 flex items-center justify-between">
                 <p className="font-chivo text-sm font-bold text-white">{formatarMes(r.mesReferencia)}</p>
+                <BaixarRelatorioBotao relatorio={r} atleta={atleta} className="ml-auto mr-1" />
                 <button
                   onClick={() => handleRemover(r.id)}
                   className="flex h-8 w-8 items-center justify-center rounded-lg text-slate-500 transition hover:bg-status-vermelho/10 hover:text-red-400"
@@ -840,7 +850,11 @@ export function AlunoDetailPage() {
             <SecaoPontuacao alunoId={aluno.id} />
           </div>
           <div className="order-4 lg:order-none">
-            <SecaoRelatorios alunoId={aluno.id} abrirFormInicial={abrirRelatorio} />
+            <SecaoRelatorios
+              alunoId={aluno.id}
+              atleta={{ nome: aluno.usuario.nome, turma: aluno.turma?.nome ?? null }}
+              abrirFormInicial={abrirRelatorio}
+            />
           </div>
         </div>
         <div className="contents lg:col-span-5 lg:flex lg:flex-col lg:gap-6">

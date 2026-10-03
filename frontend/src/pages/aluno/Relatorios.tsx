@@ -1,9 +1,17 @@
+import { useQuery } from "@tanstack/react-query";
 import { useMeusRelatorios } from "../../hooks/useRelatorios";
+import { useAuth } from "../../context/AuthContext";
+import * as alunoService from "../../services/aluno.service";
+import { BaixarRelatorioBotao } from "../../components/BaixarRelatorioBotao";
+import { formatarMesCurto } from "../../utils/data";
 import { RelatorioNotasResumo } from "../../components/RelatorioNotas";
 import { Spinner } from "../../components/Spinner";
 
 export function AlunoRelatoriosPage() {
   const { data: relatorios, isLoading } = useMeusRelatorios();
+  const { usuario } = useAuth();
+  const { data: perfil } = useQuery({ queryKey: ["alunos", "me"], queryFn: alunoService.meuPerfil });
+  const atleta = { nome: perfil?.usuario.nome ?? usuario?.nome ?? "Atleta", turma: perfil?.turma?.nome ?? null };
 
   return (
     <div className="mx-auto max-w-lg">
@@ -26,7 +34,10 @@ export function AlunoRelatoriosPage() {
         <div className="space-y-4">
           {relatorios.map((r) => (
             <div key={r.id} className="rounded-xl border border-white/10 bg-nexus-surface p-6 text-sm">
-              <p className="mb-3 font-medium text-white">{r.mesReferencia}</p>
+              <div className="mb-3 flex items-center justify-between gap-2">
+                <p className="font-medium text-white">{formatarMesCurto(r.mesReferencia)}</p>
+                <BaixarRelatorioBotao relatorio={r} atleta={atleta} />
+              </div>
               <RelatorioNotasResumo notas={r} />
               <p className="mb-2 mt-2 text-slate-400">
                 <span className="font-medium text-nexus-highlight">Pontos fortes:</span>{" "}
